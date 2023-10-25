@@ -26,7 +26,9 @@ func main() {
 		fmt.Printf("Do you still want to continue? ")
 		fmt.Scanln(&wantToContinue)
 		if !gotYes(wantToContinue) {
-			os.Exit(0)
+			os.Exit(1)
 		}
 	}
+	jsonStr := getSitemapJSON()
+	fmt.Println(jsonStr)
 }
