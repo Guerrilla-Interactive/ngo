@@ -1,8 +1,5 @@
-main: ngo
-	./ngo
-
-ngo: main.go
-	go build .
+main: 
+	go run .
 
 install:
 	go install .
