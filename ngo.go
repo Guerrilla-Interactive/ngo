@@ -34,8 +34,13 @@ func createFolderAndExitOnFail(parentDir string, name string) string {
 	return newName
 }
 
-func createFileAndExitOnFail(filepath string, data string) {
+func createFile(filepath string, data string) error {
 	err := os.WriteFile(filepath, []byte(data), 0o644)
+	return err
+}
+
+func createFileAndExitOnFail(filepath string, data string) {
+	err := createFile(filepath, data)
 	if err != nil {
 		log.Fatal(err)
 	}
