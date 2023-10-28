@@ -29,6 +29,7 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	jsonStr := getSitemapJSON()
-	fmt.Println(jsonStr)
+	sitemap := getSitemapStdIn()
+	// TODO create appropriate folder structure
+	fmt.Println(sitemap.Title)
 }
