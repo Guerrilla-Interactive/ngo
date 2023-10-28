@@ -27,5 +27,7 @@ func main() {
 	}
 	sitemap := getSitemapStdIn()
 	n := ngo{currentDir, sitemap}
+	runPreFilesCreationCommands()
 	n.createFiles()
+	runPostFilesCreationCommands()
 }
