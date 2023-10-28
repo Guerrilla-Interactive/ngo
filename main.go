@@ -2,23 +2,19 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
-
-func exit(err error) {
-	fmt.Println(err.Error())
-	os.Exit(1)
-}
 
 func main() {
 	currentDir, err := os.Getwd()
 	if err != nil {
-		exit(err)
+		log.Fatal(err)
 	}
 	// Check if the directory is empty
 	isEmpty, err := IsEmpty(currentDir)
 	if err != nil {
-		exit(err)
+		log.Fatal(err)
 	}
 	var wantToContinue string
 	if !isEmpty {
@@ -30,6 +26,6 @@ func main() {
 		}
 	}
 	sitemap := getSitemapStdIn()
-	// TODO create appropriate folder structure
-	fmt.Println(sitemap.Title)
+	n := ngo{currentDir, sitemap}
+	n.createFiles()
 }

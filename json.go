@@ -2,13 +2,22 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"os"
+)
+
+type RouteType int
+
+const (
+	FillerRoute  RouteType = 0
+	StaticRoute  RouteType = 1
+	DynamicRoute RouteType = 2
 )
 
 type RootRoute struct {
 	ID        string
 	Title     string
-	Children  []Route
+	Children  []*Route
 	SitemapID string
 	Type      int
 }
@@ -17,8 +26,8 @@ type Route struct {
 	ID       string
 	Title    string
 	ParentID string
-	Children []Route
-	Type     int
+	Children []*Route
+	Type     RouteType
 }
 
 type Packages struct {
@@ -28,7 +37,7 @@ type Packages struct {
 type Sitemap struct {
 	ID       string
 	Title    string
-	Root     RootRoute
+	Root     *RootRoute
 	Packages Packages
 }
 
@@ -36,7 +45,7 @@ func getSitemapStdIn() Sitemap {
 	// Read from standard input until EOF is found
 	var sitemap Sitemap
 	if err := json.NewDecoder(os.Stdin).Decode(&sitemap); err != nil {
-		exit(err)
+		log.Fatal(err)
 	}
 	return sitemap
 }
