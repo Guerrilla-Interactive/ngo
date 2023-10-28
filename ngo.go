@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/Guerrilla-Interactive/ngo/files"
 )
 
 type ngo struct {
@@ -24,12 +26,19 @@ func createFolder(parent string, name string) (string, error) {
 // Create folder named `name` under the directory with the path `parent` Kills
 // the process if any error in creating in the directory like out of space,
 // permission error, parent directory doesn't exist etc.
-func createFolderAndFail(parentDir string, name string) string {
+func createFolderAndExitOnFail(parentDir string, name string) string {
 	newName, err := createFolder(parentDir, name)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return newName
+}
+
+func createFileAndExitOnFail(filepath string, data string) {
+	err := os.WriteFile(filepath, []byte(data), 0o644)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func routeTitleToFolderName(title string, routeType RouteType) string {
@@ -47,7 +56,7 @@ func routeTitleToFolderName(title string, routeType RouteType) string {
 
 func createRouteAt(r *Route, parentDir string) {
 	name := routeTitleToFolderName(r.Title, r.Type)
-	created := createFolderAndFail(parentDir, name)
+	created := createFolderAndExitOnFail(parentDir, name)
 	done := make(chan bool)
 	for _, child := range r.Children {
 		child := child
@@ -63,29 +72,50 @@ func createRouteAt(r *Route, parentDir string) {
 
 	// Create files for each route
 	switch r.Type {
-	case 0: // Filler,
+	case FillerRoute: // Filler,
 		createFillerRouteFilesAt(created, r)
-	case 1: // Static
+	case StaticRoute: // Static
 		createStaticRouteFilesAt(created, r)
-	case 2: // Dynamic
+	case DynamicRoute: // Dynamic
 		createDynamicRouteFilesAt(created, r)
 	}
 }
 
-func createFillerRouteFilesAt(folder string, r *Route) {
+func createFillerRouteFilesAt(folder string, _ *Route) {
+	// Create a basic layout.tsx
+	file := filepath.Join(folder, "layout.tsx")
+	createFileAndExitOnFail(file, files.Layout)
 }
 
-func createStaticRouteFilesAt(folder string, r *Route) {
+func createStaticRouteFilesAt(folder string, _ *Route) {
+	// page.tsx
+	file := filepath.Join(folder, "page.tsx")
+	createFileAndExitOnFail(file, "")
+
+	// page.query.tsx
+	file = filepath.Join(folder, "page.query.tsx")
+	createFileAndExitOnFail(file, "")
+
+	// page.preview.tsx
+	file = filepath.Join(folder, "page.preview.tsx")
+	createFileAndExitOnFail(file, "")
+
+	// page.component.tsx
+	file = filepath.Join(folder, "page.component.tsx")
+	createFileAndExitOnFail(file, "")
 }
 
-func createDynamicRouteFilesAt(folder string, r *Route) {
+func createDynamicRouteFilesAt(folder string, _ *Route) {
+	// page.tsx
+	file := filepath.Join(folder, "page.tsx")
+	createFileAndExitOnFail(file, "")
 }
 
 func (n *ngo) createFiles() {
 	// Create src directory
-	src := createFolderAndFail(n.rootFolder, "src")
-	app := createFolderAndFail(src, "app")
-	createFolderAndFail(src, "components")
+	src := createFolderAndExitOnFail(n.rootFolder, "src")
+	app := createFolderAndExitOnFail(src, "app")
+	createFolderAndExitOnFail(src, "components")
 	// Create routes inside the app directory
 	// TODO root route
 	// Create children of root routes
