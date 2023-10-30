@@ -92,21 +92,25 @@ func createFillerRouteFilesAt(folder string, _ *Route) {
 	createFileAndExitOnFail(file, files.Layout)
 }
 
-func createStaticRouteFilesAt(folder string, _ *Route) {
+func createStaticRouteFilesAt(folder string, r *Route) {
 	// page.tsx
 	file := filepath.Join(folder, "page.tsx")
 	createFileAndExitOnFail(file, "")
 
 	// page.query.tsx
-	file = filepath.Join(folder, "page.query.tsx")
+	query := fmt.Sprintf("%v.query.tsx", r.Title)
+	file = filepath.Join(folder, query)
+
 	createFileAndExitOnFail(file, "")
 
 	// page.preview.tsx
-	file = filepath.Join(folder, "page.preview.tsx")
+	preview := fmt.Sprintf("%v.preview.tsx", r.Title)
+	file = filepath.Join(folder, preview)
 	createFileAndExitOnFail(file, "")
 
 	// page.component.tsx
-	file = filepath.Join(folder, "page.component.tsx")
+	component := fmt.Sprintf("%v.component.tsx", r.Title)
+	file = filepath.Join(folder, component)
 	createFileAndExitOnFail(file, "")
 }
 
