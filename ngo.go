@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"text/template"
 
 	"github.com/Guerrilla-Interactive/ngo/files"
 )
@@ -34,22 +37,30 @@ func createFolderAndExitOnFail(parentDir string, name string) string {
 	return newName
 }
 
-func createFile(filepath string, data string) error {
-	err := os.WriteFile(filepath, []byte(data), 0o644)
+// Create file with full path filepath where with data as contents Calls
+// `createFile` internally. Returns non-nil error if any error is encoutered
+func createFile(filepath string, data []byte) error {
+	err := os.WriteFile(filepath, data, 0o644)
 	return err
 }
 
-func createFileAndExitOnFail(filepath string, data string) {
+// Create file with full path filepath where with data as contents Calls
+// `createFile` internally and fails with log.Fatal if any error is encounterd.
+func createFileAndExitOnFail(filepath string, data []byte) {
 	err := createFile(filepath, data)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
+// Return the foldername to use for a route with the provided title and
+// RouteType. Transforms spaces into -. Puts square/small/ brackets
+// appropriately. Returns the resulting string in kebab-case
 func routeTitleToFolderName(title string, routeType RouteType) string {
+	re := regexp.MustCompile(`\s+`)
 	name := strings.ToLower(title)
 	// Replace whitespace with -
-	name = strings.ReplaceAll(name, " ", "-")
+	name = re.ReplaceAllString(name, "-")
 	switch routeType {
 	case FillerRoute:
 		name = fmt.Sprintf("(%v)", name)
@@ -59,6 +70,7 @@ func routeTitleToFolderName(title string, routeType RouteType) string {
 	return name
 }
 
+// Recursively create files for a route at given parentDir
 func createRouteAt(r *Route, parentDir string) {
 	name := routeTitleToFolderName(r.Title, r.Type)
 	created := createFolderAndExitOnFail(parentDir, name)
@@ -86,40 +98,57 @@ func createRouteAt(r *Route, parentDir string) {
 	}
 }
 
+// Write contents based on the given template to the given file creating the
+// file it it doesn't exist. Note that the template variable is generated using
+// generateTemplateVariable function
+func createFileContents(filename string, temp *template.Template, r *Route) {
+	b := new(bytes.Buffer)
+	templateVar := routeTemplateVariable(r.Title)
+	if err := temp.Execute(b, templateVar); err != nil {
+		log.Fatal(err)
+	}
+	createFileAndExitOnFail(filename, b.Bytes())
+}
+
+// Creates necessary files for a filler route in a given folder
 func createFillerRouteFilesAt(folder string, _ *Route) {
 	// Create a basic layout.tsx
 	file := filepath.Join(folder, "layout.tsx")
-	createFileAndExitOnFail(file, files.Layout)
+	createFileAndExitOnFail(file, []byte(files.Layout))
 }
 
+// Creates necessary files for a static route in a given folder
 func createStaticRouteFilesAt(folder string, r *Route) {
+	pageNamePrefix := routeTitleToFolderName(r.Title, r.Type)
+
 	// page.tsx
 	file := filepath.Join(folder, "page.tsx")
-	createFileAndExitOnFail(file, "")
+	createFileContents(file, files.Page, r)
 
 	// page.query.tsx
-	query := fmt.Sprintf("%v.query.tsx", r.Title)
+	query := fmt.Sprintf("%v.query.tsx", pageNamePrefix)
 	file = filepath.Join(folder, query)
-
-	createFileAndExitOnFail(file, "")
+	createFileContents(file, files.Query, r)
 
 	// page.preview.tsx
-	preview := fmt.Sprintf("%v.preview.tsx", r.Title)
+	preview := fmt.Sprintf("%v.preview.tsx", pageNamePrefix)
 	file = filepath.Join(folder, preview)
-	createFileAndExitOnFail(file, "")
+	createFileContents(file, files.Preview, r)
 
 	// page.component.tsx
-	component := fmt.Sprintf("%v.component.tsx", r.Title)
+	component := fmt.Sprintf("%v.component.tsx", pageNamePrefix)
 	file = filepath.Join(folder, component)
-	createFileAndExitOnFail(file, "")
+	createFileContents(file, files.Component, r)
 }
 
+// Creates necessary files for a dynamic route in a given folder
 func createDynamicRouteFilesAt(folder string, _ *Route) {
 	// page.tsx
 	file := filepath.Join(folder, "page.tsx")
-	createFileAndExitOnFail(file, "")
+	createFileAndExitOnFail(file, nil)
 }
 
+// Create all necessary files for a given ngo object
 func (n *ngo) createFiles() {
 	// Create src directory
 	src := createFolderAndExitOnFail(n.rootFolder, "src")

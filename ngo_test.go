@@ -15,6 +15,7 @@ func TestRouteTitleToFolderName(t *testing.T) {
 	tests := []test{
 		{routeType: StaticRoute, title: "About", exp: "about"},
 		{routeType: StaticRoute, title: "About Us", exp: "about-us"},
+		{routeType: StaticRoute, title: "About   Us", exp: "about-us"},
 		{routeType: FillerRoute, title: "Authenticated", exp: "(authenticated)"},
 		{routeType: FillerRoute, title: "Authenticated Users", exp: "(authenticated-users)"},
 		{routeType: DynamicRoute, title: "Person", exp: "[slug]"},

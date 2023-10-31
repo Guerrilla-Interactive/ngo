@@ -28,7 +28,7 @@ func TestIsEmpty(t *testing.T) {
 	}
 	// Check not empty
 	randomFile := filepath.Join(tmpDir, "foobar.txt")
-	err = createFile(randomFile, "")
+	err = createFile(randomFile, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
