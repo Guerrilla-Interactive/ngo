@@ -20,13 +20,13 @@ type Props = {
 }
 
 export const generateMetadata = async ({ params }: Props) => {
-    const data = await tClient({{.CamelCaseComponentName}} SlugQuery, params)
+    const data = await tClient({{.CamelCaseComponentName}}SlugQuery, params)
     return generatePageMeta(data?.metadata)
 }
 
-const {{.PascalCaseComponentName}} SlugRoute = async ({ params }: Props) => {
+const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: Props) => {
     const { isEnabled } = draftMode()
-    const data = await tClient({{.CamelCaseComponentName}} SlugQuery, params)
+    const data = await tClient({{.CamelCaseComponentName}}SlugQuery, params)
 
     if (!data) {
         return notFound()
@@ -40,9 +40,9 @@ const {{.PascalCaseComponentName}} SlugRoute = async ({ params }: Props) => {
         )
     }
 
-    return {{.PascalCaseComponentName}} SlugPage {...data } />
+    return {{.PascalCaseComponentName}}SlugPage {...data } />
 }
 
-export default {{.PascalCaseComponentName}} SlugRoute`
+export default {{.PascalCaseComponentName}}SlugRoute`
 
 var Page = template.Must(template.New("page").Parse(page))

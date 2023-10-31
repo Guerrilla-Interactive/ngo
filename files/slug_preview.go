@@ -12,7 +12,7 @@ import { {{.PascalCaseComponentName}}Component } from "./{{.KebabCaseComponentNa
 import type { {{.PascalCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-server)/{{.KebabCaseComponentName}}.slug-query"
 import { {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-server)/{{.KebabCaseComponentName}}.slug-query"
 
-export const {{.PascalCaseComponentName}}Preview = ({
+export const {{.PascalCaseComponentName}}SlugPreview = ({
   initialData,
   queryParams,
 }: {
