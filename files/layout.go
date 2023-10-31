@@ -1,7 +1,3 @@
 package files
 
-const Layout = `import React from 'react'
-const Layout = ({children}: {children: React.ReactNode}) => {
-		return (<>{children} </>)}
-
-export default Layout`
+const Layout = ``

@@ -113,8 +113,9 @@ func createFileContents(filename string, temp *template.Template, r *Route) {
 // Creates necessary files for a filler route in a given folder
 func createFillerRouteFilesAt(folder string, _ *Route) {
 	// Create a basic layout.tsx
-	file := filepath.Join(folder, "layout.tsx")
-	createFileAndExitOnFail(file, []byte(files.Layout))
+	// We don't create any files inside the filler
+	// file := filepath.Join(folder, "layout.tsx")
+	// createFileAndExitOnFail(file, []byte(files.Layout))
 }
 
 // Creates necessary files for a static route in a given folder
