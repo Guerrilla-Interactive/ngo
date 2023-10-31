@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 )
 
@@ -16,11 +15,7 @@ type RouteTemplateVariable struct {
 // variable may be used in the template for a file created for a route.
 func routeTemplateVariable(title string) RouteTemplateVariable {
 	var v RouteTemplateVariable
-
-	re := regexp.MustCompile(`\s+`)
-	name := strings.ToLower(title)
-	// Replace whitespace with -
-	kebab := re.ReplaceAllString(name, "-")
+	kebab := routeTitleKebabCase(title)
 
 	v.KebabCaseComponentName = kebab
 	pascalCase := new(strings.Builder)

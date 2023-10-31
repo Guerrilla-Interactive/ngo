@@ -53,14 +53,20 @@ func createFileAndExitOnFail(filepath string, data []byte) {
 	}
 }
 
-// Return the foldername to use for a route with the provided title and
-// RouteType. Transforms spaces into -. Puts square/small/ brackets
-// appropriately. Returns the resulting string in kebab-case
-func routeTitleToFolderName(title string, routeType RouteType) string {
+// Returns the kebabcase version of the title string
+func routeTitleKebabCase(title string) string {
 	re := regexp.MustCompile(`\s+`)
 	name := strings.ToLower(title)
 	// Replace whitespace with -
 	name = re.ReplaceAllString(name, "-")
+	return name
+}
+
+// Return the foldername to use for a route with the provided title and
+// RouteType. Transforms spaces into -. Puts square/small/ brackets
+// appropriately. Returns the resulting string in kebab-case
+func routeTitleToFolderName(title string, routeType RouteType) string {
+	name := routeTitleKebabCase(title)
 	switch routeType {
 	case FillerRoute:
 		name = fmt.Sprintf("(%v)", name)
@@ -120,7 +126,7 @@ func createFillerRouteFilesAt(folder string, _ *Route) {
 
 // Creates necessary files for a static route in a given folder
 func createStaticRouteFilesAt(folder string, r *Route) {
-	pageNamePrefix := routeTitleToFolderName(r.Title, r.Type)
+	pageNamePrefix := routeTitleKebabCase(r.Title)
 
 	// page.tsx
 	file := filepath.Join(folder, "page.tsx")
@@ -143,10 +149,34 @@ func createStaticRouteFilesAt(folder string, r *Route) {
 }
 
 // Creates necessary files for a dynamic route in a given folder
-func createDynamicRouteFilesAt(folder string, _ *Route) {
+func createDynamicRouteFilesAt(folder string, r *Route) {
+	pageNamePrefix := routeTitleKebabCase(r.Title)
+
+	// page.slug-page.tsx
+	pageSlug := fmt.Sprintf("%v.slug-page.tsx", pageNamePrefix)
+	file := filepath.Join(folder, pageSlug)
+	createFileContents(file, files.SlugPage, r)
+
+	// Create core
+	core := createFolderAndExitOnFail(folder, "core")
+	serverFolderName := createFolderAndExitOnFail(core, fmt.Sprintf("%v-server", pageNamePrefix))
+	destinationFolderName := createFolderAndExitOnFail(core, fmt.Sprintf("%v-destination", pageNamePrefix))
+
+	// Files inside server
+	// page.slug-query.tsx
+	file = filepath.Join(serverFolderName, fmt.Sprintf("%v.slug-query.tsx", pageNamePrefix))
+	createFileContents(file, files.Query, r)
+	// page.slug-schema.ts
+	file = filepath.Join(serverFolderName, fmt.Sprintf("%v.slug-schema.ts", pageNamePrefix))
+	createFileContents(file, files.QuerySchema, r)
+
+	// Files inside destination
+	// page.slug-preview.tsx
+	file = filepath.Join(destinationFolderName, fmt.Sprintf("%v.slug-preview.tsx", pageNamePrefix))
+	createFileContents(file, files.SlugPreview, r)
 	// page.tsx
-	file := filepath.Join(folder, "page.tsx")
-	createFileAndExitOnFail(file, nil)
+	file = filepath.Join(destinationFolderName, "page.tsx")
+	createFileContents(file, files.Page, r)
 }
 
 // Create all necessary files for a given ngo object
