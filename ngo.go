@@ -159,8 +159,8 @@ func createDynamicRouteFilesAt(folder string, r *Route) {
 
 	// Create core
 	core := createFolderAndExitOnFail(folder, "core")
-	serverFolderName := createFolderAndExitOnFail(core, fmt.Sprintf("%v-server", pageNamePrefix))
-	destinationFolderName := createFolderAndExitOnFail(core, fmt.Sprintf("%v-destination", pageNamePrefix))
+	serverFolderName := createFolderAndExitOnFail(core, fmt.Sprintf("(%v-server)", pageNamePrefix))
+	destinationFolderName := createFolderAndExitOnFail(core, fmt.Sprintf("(%v-destination)", pageNamePrefix))
 
 	// Files inside server
 	// page.slug-query.tsx

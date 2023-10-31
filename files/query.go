@@ -10,7 +10,7 @@ import { notDraft } from "@/src/lib/sanity/not-draft.query"
 import { sectionBlockQuery } from "@/src/components/sections/sections/section-block.queries"
 
 export const {{.CamelCaseComponentName}}SlugQuery = q("*")
-    .filterByType("{{.KebabCaseComponentName}}")
+    .filterByType("{{.CamelCaseComponentName}}")
     .filter(` + "`${notDraft} && $slug == slug.current`" + `)
     .grab({
         title: q.string().optional(),

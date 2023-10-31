@@ -11,7 +11,7 @@ import { defaultGroups } from "@/sanity/schemas/utils/default-groups.util";
 
 export const {{.CamelCaseComponentName}}SlugSchema = defineType({
   type: "document",
-  name: "{{.KebabCaseComponentName}}",
+  name: "{{.CamelCaseComponentName}}",
   title: "{{.PascalCaseComponentName}}",
   groups: defaultGroups,
   options: {
