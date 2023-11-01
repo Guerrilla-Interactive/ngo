@@ -20,7 +20,8 @@ var GitInit = Command{"git", "init"}
 
 func runPreFilesCreationCommands() {
 	commands := []Command{
-		GitInit,
+		// Example command
+		// GitInit,
 	}
 	for _, cmd := range commands {
 		executeCommand(cmd)
