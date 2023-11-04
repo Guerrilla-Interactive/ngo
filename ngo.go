@@ -77,14 +77,14 @@ func routeTitleToFolderName(title string, routeType RouteType) string {
 }
 
 // Recursively create files for a route at given parentDir
-func createRouteAt(r *Route, parentDir string) {
+func createRouteAt(r *Route, parentDir string, schemasCh chan<- string) {
 	name := routeTitleToFolderName(r.Title, r.Type)
 	created := createFolderAndExitOnFail(parentDir, name)
 	done := make(chan bool)
 	for _, child := range r.Children {
 		child := child
 		go func() {
-			createRouteAt(child, created)
+			createRouteAt(child, created, schemasCh)
 			done <- true
 		}()
 	}
@@ -100,7 +100,7 @@ func createRouteAt(r *Route, parentDir string) {
 	case StaticRoute: // Static
 		createStaticRouteFilesAt(created, r)
 	case DynamicRoute: // Dynamic
-		createDynamicRouteFilesAt(created, r)
+		createDynamicRouteFilesAt(created, r, schemasCh)
 	}
 }
 
@@ -149,7 +149,7 @@ func createStaticRouteFilesAt(folder string, r *Route) {
 }
 
 // Creates necessary files for a dynamic route in a given folder
-func createDynamicRouteFilesAt(folder string, r *Route) {
+func createDynamicRouteFilesAt(folder string, r *Route, schemasCh chan<- string) {
 	pageNamePrefix := routeTitleKebabCase(r.Title)
 
 	// page.slug-page.tsx
@@ -166,8 +166,10 @@ func createDynamicRouteFilesAt(folder string, r *Route) {
 	// page.slug-query.tsx
 	file = filepath.Join(serverFolderName, fmt.Sprintf("%v.slug-query.tsx", pageNamePrefix))
 	createFileContents(file, files.Query, r)
+
 	// page.slug-schema.ts
 	file = filepath.Join(serverFolderName, fmt.Sprintf("%v.slug-schema.ts", pageNamePrefix))
+	schemasCh <- file // Send the schema file name to the schemasCh
 	createFileContents(file, files.QuerySchema, r)
 
 	// Files inside destination
@@ -181,14 +183,41 @@ func createDynamicRouteFilesAt(folder string, r *Route) {
 
 // Create all necessary files for a given ngo object
 func (n *ngo) createFiles() {
+	schemas := make([]string, 0)   // slice of schemas
+	schemasCh := make(chan string) // schemasChannel
+
+	// create a goroutine to handle schemas being sent to the channel
+	go func() {
+		for in := range schemasCh {
+			// Replace the first
+			in = strings.Replace(in, n.rootFolder, "", 1)
+			schemas = append(schemas, in)
+		}
+	}()
+
 	// Create src directory
 	src := createFolderAndExitOnFail(n.rootFolder, "src")
 	app := createFolderAndExitOnFail(src, "app")
+
+	// Sanity related directories
+	sanity := createFolderAndExitOnFail(n.rootFolder, "sanity")
+	sanitySchemas := createFolderAndExitOnFail(sanity, "schemas")
 	createFolderAndExitOnFail(src, "components")
+
 	// Create routes inside the app directory
 	// TODO root route
 	// Create children of root routes
 	for _, child := range n.sitemap.Root.Children {
-		createRouteAt(child, app)
+		createRouteAt(child, app, schemasCh)
 	}
+
+	// Sanity schemas file
+	// Create document index.ts for schemas
+	fileDocIndexSchemas := filepath.Join(sanitySchemas, "index.ts")
+	b := new(bytes.Buffer)
+	if err := files.DocumentsSchemaQuery.Execute(b, DocumentSchemasTemplateVariables{schemas}); err != nil {
+		log.Fatal(err)
+	}
+	createFileAndExitOnFail(fileDocIndexSchemas, b.Bytes())
+	fmt.Println(schemas)
 }

@@ -11,6 +11,10 @@ type RouteTemplateVariable struct {
 	CamelCaseComponentName  string
 }
 
+type DocumentSchemasTemplateVariables struct {
+	Schemas []string
+}
+
 // Creates a template variable for a given route title. The attributes of this
 // variable may be used in the template for a file created for a route.
 func routeTemplateVariable(title string) RouteTemplateVariable {
