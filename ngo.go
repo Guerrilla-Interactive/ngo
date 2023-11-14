@@ -197,6 +197,7 @@ func (n *ngo) createFiles() {
 	}()
 
 	createPackageJSON(n.rootFolder)
+	createTSConfigJSON(n.rootFolder)
 
 	// Create src directory
 	src := createFolderAndExitOnFail(n.rootFolder, "src")
@@ -231,6 +232,15 @@ func createPackageJSON(location string) {
 	filePath := filepath.Join(location, "package.json")
 	b := new(bytes.Buffer)
 	if err := files.PackageJSON.Execute(b, templateVar); err != nil {
+		log.Fatal(err)
+	}
+	createFileAndExitOnFail(filePath, b.Bytes())
+}
+
+func createTSConfigJSON(location string) {
+	filePath := filepath.Join(location, "tsconfig.json")
+	b := new(bytes.Buffer)
+	if err := files.TSConfigJSON.Execute(b, nil); err != nil {
 		log.Fatal(err)
 	}
 	createFileAndExitOnFail(filePath, b.Bytes())
