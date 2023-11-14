@@ -246,24 +246,6 @@ func createPackageJSON(location string) {
 	createFileAndExitOnFail(filePath, b.Bytes())
 }
 
-// func createTSConfigJSON(location string) {
-// 	filePath := filepath.Join(location, "tsconfig.json")
-// 	b := new(bytes.Buffer)
-// 	if err := files.TSConfigJSON.Execute(b, nil); err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	createFileAndExitOnFail(filePath, b.Bytes())
-// }
-//
-// func createGitignore(location string) {
-// 	filePath := filepath.Join(location, ".gitignore")
-// 	b := new(bytes.Buffer)
-// 	if err := files.Gitignore.Execute(b, nil); err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	createFileAndExitOnFail(filePath, b.Bytes())
-// }
-
 func createFileWithoutTemplateVar(location string, filename string, temp *template.Template) {
 	filePath := filepath.Join(location, filename)
 	b := new(bytes.Buffer)
