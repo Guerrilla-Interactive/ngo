@@ -196,6 +196,8 @@ func (n *ngo) createFiles() {
 		}
 	}()
 
+	createPackageJSON(n.rootFolder)
+
 	// Create src directory
 	src := createFolderAndExitOnFail(n.rootFolder, "src")
 	app := createFolderAndExitOnFail(src, "app")
@@ -220,4 +222,16 @@ func (n *ngo) createFiles() {
 		log.Fatal(err)
 	}
 	createFileAndExitOnFail(fileDocIndexSchemas, b.Bytes())
+}
+
+func createPackageJSON(location string) {
+	names := strings.Split(location, "/")
+	name := names[len(names)-1]
+	templateVar := PackageJSONTemplateVariables{name}
+	filePath := filepath.Join(location, "package.json")
+	b := new(bytes.Buffer)
+	if err := files.PackageJSON.Execute(b, templateVar); err != nil {
+		log.Fatal(err)
+	}
+	createFileAndExitOnFail(filePath, b.Bytes())
 }
