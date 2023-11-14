@@ -196,6 +196,18 @@ func (n *ngo) createFiles() {
 		}
 	}()
 
+	createPackageJSON(n.rootFolder)
+	createFileWithoutTemplateVar(n.rootFolder, ".eslintrc.json", files.Eslintrc)
+	createFileWithoutTemplateVar(n.rootFolder, ".gitignore", files.Gitignore)
+	createFileWithoutTemplateVar(n.rootFolder, ".npmrc", files.Npmrc)
+	createFileWithoutTemplateVar(n.rootFolder, "next.config.mjs", files.NextConfig)
+	createFileWithoutTemplateVar(n.rootFolder, "postcss.config.cjs", files.Postcss)
+	createFileWithoutTemplateVar(n.rootFolder, "prettier.config.cjs", files.PrettierConfig)
+	createFileWithoutTemplateVar(n.rootFolder, "sanity-env.d.ts", files.SanityEnv)
+	createFileWithoutTemplateVar(n.rootFolder, "sanity.cli.ts", files.SanityCli)
+	createFileWithoutTemplateVar(n.rootFolder, "tailwind.config.cjs", files.Tailwind)
+	createFileWithoutTemplateVar(n.rootFolder, "tsconfig.json", files.TSConfigJSON)
+
 	// Create src directory
 	src := createFolderAndExitOnFail(n.rootFolder, "src")
 	app := createFolderAndExitOnFail(src, "app")
@@ -220,4 +232,43 @@ func (n *ngo) createFiles() {
 		log.Fatal(err)
 	}
 	createFileAndExitOnFail(fileDocIndexSchemas, b.Bytes())
+}
+
+func createPackageJSON(location string) {
+	names := strings.Split(location, "/")
+	name := names[len(names)-1]
+	templateVar := PackageJSONTemplateVariables{name}
+	filePath := filepath.Join(location, "package.json")
+	b := new(bytes.Buffer)
+	if err := files.PackageJSON.Execute(b, templateVar); err != nil {
+		log.Fatal(err)
+	}
+	createFileAndExitOnFail(filePath, b.Bytes())
+}
+
+// func createTSConfigJSON(location string) {
+// 	filePath := filepath.Join(location, "tsconfig.json")
+// 	b := new(bytes.Buffer)
+// 	if err := files.TSConfigJSON.Execute(b, nil); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	createFileAndExitOnFail(filePath, b.Bytes())
+// }
+//
+// func createGitignore(location string) {
+// 	filePath := filepath.Join(location, ".gitignore")
+// 	b := new(bytes.Buffer)
+// 	if err := files.Gitignore.Execute(b, nil); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	createFileAndExitOnFail(filePath, b.Bytes())
+// }
+
+func createFileWithoutTemplateVar(location string, filename string, temp *template.Template) {
+	filePath := filepath.Join(location, filename)
+	b := new(bytes.Buffer)
+	if err := temp.Execute(b, nil); err != nil {
+		log.Fatal(err)
+	}
+	createFileAndExitOnFail(filePath, b.Bytes())
 }
