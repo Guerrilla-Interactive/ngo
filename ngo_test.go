@@ -18,8 +18,8 @@ func TestRouteTitleToFolderName(t *testing.T) {
 		{routeType: StaticRoute, title: "About   Us", exp: "about-us"},
 		{routeType: FillerRoute, title: "Authenticated", exp: "(authenticated)"},
 		{routeType: FillerRoute, title: "Authenticated Users", exp: "(authenticated-users)"},
-		{routeType: DynamicRoute, title: "Person", exp: "[slug]"},
-		{routeType: DynamicRoute, title: "Person", exp: "[slug]"},
+		{routeType: DynamicRoute, title: "Person", exp: "person/[slug]"},
+		{routeType: DynamicRoute, title: "Person Name", exp: "person-name/[slug]"},
 	}
 	for _, test := range tests {
 		got := routeTitleToFolderName(test.title, test.routeType)
@@ -52,7 +52,7 @@ func TestCreateFolder(t *testing.T) {
 		{name: "foo"},
 		{name: "bar"},
 		{name: "foo/bar"},
-		{name: "zoobar/new", fail: true}, // Should fail because createFolder does
+		{name: "zoobar/new"}, // Shouldn't fail because createFolder creates intermediate folders as well
 	}
 
 	for _, test := range tests {

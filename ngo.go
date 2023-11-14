@@ -19,10 +19,11 @@ type ngo struct {
 }
 
 // Create folder named `name` under the directory with the path `parent`
-// Doesn't create intermediate directories
+// Create intermediate directories if necessary
 func createFolder(parent string, name string) (string, error) {
 	newName := filepath.Join(parent, name)
-	err := os.Mkdir(newName, 0o755)
+	// Create folder, including intermediaries
+	err := os.MkdirAll(newName, 0o755)
 	return newName, err
 }
 
@@ -71,7 +72,7 @@ func routeTitleToFolderName(title string, routeType RouteType) string {
 	case FillerRoute:
 		name = fmt.Sprintf("(%v)", name)
 	case DynamicRoute:
-		name = "[slug]"
+		name = fmt.Sprintf("%v/[slug]", name)
 	}
 	return name
 }
@@ -219,5 +220,4 @@ func (n *ngo) createFiles() {
 		log.Fatal(err)
 	}
 	createFileAndExitOnFail(fileDocIndexSchemas, b.Bytes())
-	fmt.Println(schemas)
 }
