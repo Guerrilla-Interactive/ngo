@@ -1,33 +1,14 @@
+/*
+Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+*/
+
+// ngo is a cli that helps to you to build a NextJS project
+// Primarily, it is used to create files and folders when adding
+// routes
 package main
 
-import (
-	"fmt"
-	"log"
-	"os"
-)
+import "github.com/Guerrilla-Interactive/ngo/cmd"
 
 func main() {
-	currentDir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Check if the directory is empty
-	isEmpty, err := IsEmpty(currentDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var wantToContinue string
-	if !isEmpty {
-		fmt.Printf("%v is not empty\n", currentDir)
-		fmt.Printf("Do you still want to continue? ")
-		fmt.Scanln(&wantToContinue)
-		if !gotYes(wantToContinue) {
-			os.Exit(1)
-		}
-	}
-	sitemap := getSitemapStdIn()
-	n := ngo{currentDir, sitemap}
-	runPreFilesCreationCommands()
-	n.createFiles()
-	runPostFilesCreationCommands()
+	cmd.Execute()
 }
