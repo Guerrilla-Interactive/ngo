@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"strings"
+
+	"github.com/Guerrilla-Interactive/ngo/cmd"
 )
 
 type RouteTemplateVariable struct {
@@ -23,7 +25,7 @@ type PackageJSONTemplateVariables struct {
 // variable may be used in the template for a file created for a route.
 func routeTemplateVariable(title string) RouteTemplateVariable {
 	var v RouteTemplateVariable
-	kebab := routeTitleKebabCase(title)
+	kebab := cmd.RouteTitleKebabCase(title)
 
 	v.KebabCaseComponentName = kebab
 	pascalCase := new(strings.Builder)

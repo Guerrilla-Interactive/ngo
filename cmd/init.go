@@ -17,8 +17,8 @@ var (
 Choose a custom template via --temp flag.
 Optionally provide json sitemap file with the --sitemap flag
 to create the required folder structure`,
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("todo init")
+		Run: func(_ *cobra.Command, _ []string) {
+			fmt.Println("Init command is yet to be implemented")
 		},
 	}
 )

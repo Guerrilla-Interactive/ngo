@@ -6,10 +6,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"text/template"
 
+	"github.com/Guerrilla-Interactive/ngo/cmd"
 	"github.com/Guerrilla-Interactive/ngo/files"
 )
 
@@ -54,20 +54,11 @@ func createFileAndExitOnFail(filepath string, data []byte) {
 	}
 }
 
-// Returns the kebabcase version of the title string
-func routeTitleKebabCase(title string) string {
-	re := regexp.MustCompile(`\s+`)
-	name := strings.ToLower(title)
-	// Replace whitespace with -
-	name = re.ReplaceAllString(name, "-")
-	return name
-}
-
 // Return the foldername to use for a route with the provided title and
 // RouteType. Transforms spaces into -. Puts square/small/ brackets
 // appropriately. Returns the resulting string in kebab-case
 func routeTitleToFolderName(title string, routeType RouteType) string {
-	name := routeTitleKebabCase(title)
+	name := cmd.RouteTitleKebabCase(title)
 	switch routeType {
 	case FillerRoute:
 		name = fmt.Sprintf("(%v)", name)
@@ -127,7 +118,7 @@ func createFillerRouteFilesAt(folder string, _ *Route) {
 
 // Creates necessary files for a static route in a given folder
 func createStaticRouteFilesAt(folder string, r *Route) {
-	pageNamePrefix := routeTitleKebabCase(r.Title)
+	pageNamePrefix := cmd.RouteTitleKebabCase(r.Title)
 
 	// page.tsx
 	file := filepath.Join(folder, "page.tsx")
@@ -151,7 +142,7 @@ func createStaticRouteFilesAt(folder string, r *Route) {
 
 // Creates necessary files for a dynamic route in a given folder
 func createDynamicRouteFilesAt(folder string, r *Route, schemasCh chan<- string) {
-	pageNamePrefix := routeTitleKebabCase(r.Title)
+	pageNamePrefix := cmd.RouteTitleKebabCase(r.Title)
 
 	// page.slug-page.tsx
 	pageSlug := fmt.Sprintf("%v.slug-page.tsx", pageNamePrefix)
