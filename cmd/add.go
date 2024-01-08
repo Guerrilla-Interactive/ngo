@@ -20,6 +20,7 @@ var (
 	routeName             string // command flag
 	routeType             string // command flag
 	createSchema          bool   // command flag
+	catchAllRoute         bool   // command flag
 	createRouteComponents bool   // command flag
 	addCmd                = &cobra.Command{
 		Use:   "add",
@@ -103,6 +104,7 @@ func init() {
 	addCmd.Flags().StringVarP(&routeType, "type", "t", "", "type dyanamic or type static")
 	addCmd.Flags().StringVarP(&routeName, "name", "n", "", "name of the route")
 	addCmd.Flags().BoolVarP(&createSchema, "schema", "s", true, "boolean indicating where a schema needs to be created")
+	addCmd.Flags().BoolVarP(&catchAllRoute, "catchall", "c", false, "boolean indicating whether the dynamic route is catch all")
 	addCmd.MarkFlagRequired("type")
 	addCmd.MarkFlagRequired("name")
 }
@@ -167,6 +169,7 @@ func createStaticRoute(appDir string, name string) {
 
 // Create dynamic route in the given app directory
 func createDynamicRoute(appDir string, name string) {
+	messages := make([]string, 0)
 	mainFolder := filepath.Join(appDir, name)
 	// if the name contains "/" take only the last part as the name of the route
 	routeParts := strings.Split(name, "/")
@@ -175,24 +178,35 @@ func createDynamicRoute(appDir string, name string) {
 	name = routeParts[len(routeParts)-1]
 
 	slugFolder := filepath.Join(mainFolder, "[slug]")
-	slugCore := filepath.Join(slugFolder, fmt.Sprintf("%v-slug-core", name))
-	slugCoreDestination := filepath.Join(slugCore, fmt.Sprintf("%v-slug-destination", name))
+	slugCore := filepath.Join(slugFolder, fmt.Sprintf("(%v-slug-core)", name))
+	slugCoreDestination := filepath.Join(slugCore, fmt.Sprintf("(%v-slug-destination)", name))
 	CreatePathAndExitOnFail(slugCoreDestination)
-	// Files: preview and page.tsx
+	// Files: preview and page.tsx and body.tsx
 	slugPreviewFilename := filepath.Join(slugCoreDestination, fmt.Sprintf("%v.slug-preview.tsx", name))
 	CreateFileContents(slugPreviewFilename, files.SlugPreview, name)
 	slugPageFilename := filepath.Join(slugCoreDestination, "page.tsx")
-	CreateFileContents(slugPageFilename, files.SlugPage, name)
+	if catchAllRoute {
+		CreateFileContents(slugPageFilename, files.SlugPageCatchAlll, name)
+		messages = append(messages, fmt.Sprintf("catch all page.tsx: %v", slugPageFilename))
+	} else {
+		CreateFileContents(slugPageFilename, files.SlugPage, name)
+		messages = append(messages, fmt.Sprintf("page.tsx: %v", slugPageFilename))
+	}
+	bodyFilename := filepath.Join(slugCoreDestination, fmt.Sprintf("%v.body.tsx", name))
+	CreateFileContents(bodyFilename, files.PageSlugBody, name)
+	messages = append(messages, fmt.Sprintf("page body: %v", bodyFilename))
 
-	slugCoreServer := filepath.Join(slugCore, fmt.Sprintf("%v-slug-server", name))
+	slugCoreServer := filepath.Join(slugCore, fmt.Sprintf("(%v-slug-server)", name))
 	CreatePathAndExitOnFail(slugCoreServer)
 	// Files: slug queries, slug schema
 	if createSchema {
 		slugSchemaFilename := filepath.Join(slugCoreServer, fmt.Sprintf("%v.slug-schema.ts", name))
 		CreateFileContents(slugSchemaFilename, files.SlugSchema, name)
+		messages = append(messages, fmt.Sprintf("slug schema: %v", slugSchemaFilename))
 	}
 	slugQueriesFilename := filepath.Join(slugCoreServer, fmt.Sprintf("%v.slug-query.tsx", name))
 	CreateFileContents(slugQueriesFilename, files.SlugQuery, name)
+	messages = append(messages, fmt.Sprintf("slug query: %v", slugQueriesFilename))
 
 	// Shared utils
 	// Note that here the "shared" refers to shared between the slug and the index page of the route
@@ -205,6 +219,7 @@ func createDynamicRoute(appDir string, name string) {
 	// Only create the file if it doesn't exist
 	if errors.Is(err, os.ErrNotExist) {
 		CreateFileContents(deskStructureFilename, files.SharedDeskStructure, name)
+		messages = append(messages, fmt.Sprintf("desk structure: %v", deskStructureFilename))
 	} else if err != nil {
 		fmt.Println(err)
 	}
@@ -217,7 +232,15 @@ func createDynamicRoute(appDir string, name string) {
 	// Only create the file if it doesn't exist
 	if errors.Is(err, os.ErrNotExist) {
 		CreateFileContents(sharedQueriesFilename, files.SharedQuery, name)
+		messages = append(messages, fmt.Sprintf("desk structure: %v", sharedQueriesFilename))
 	} else if err != nil {
 		fmt.Println(err)
+	}
+	printMsg(messages)
+}
+
+func printMsg(messages []string) {
+	for _, msg := range messages {
+		fmt.Println(msg)
 	}
 }

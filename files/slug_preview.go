@@ -2,30 +2,37 @@ package files
 
 import "text/template"
 
-const slugPreview = `
-"use client"
-import { useLiveQuery } from "next-sanity/preview"
+const slugPreview = `"use client"
 
-import { Occupier } from "@/components/utils/occupier.component"
+import { PreviewLoadingErrorHOC } from "@/src/components/sanity/preview-loading-error-hoc"
 
-import { {{.PascalCaseComponentName}}Component } from "./{{.KebabCaseComponentName}}.component"
-import type { {{.PascalCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-server)/{{.KebabCaseComponentName}}.slug-query"
-import { {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-server)/{{.KebabCaseComponentName}}.slug-query"
+import type { {{.PascalCaseComponentName}}SlugQueryType } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query";
+import { {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query"
+import { {{.PascalCaseComponentName}}SlugBody } from "./{{.KebabCaseComponentName}}.body"
 
 export const {{.PascalCaseComponentName}}SlugPreview = ({
-  initialData,
-  queryParams,
+	initial,
+	queryParams,
 }: {
-  initialData: {{.PascalCaseComponentName}}Query
-  queryParams: { slug: string }
+	initial: {{.PascalCaseComponentName}}SlugQueryType
+	queryParams: { slug: string }
 }) => {
-  const [data] = useLiveQuery(initialData, {{.CamelCaseComponentName}}Query.query, queryParams)
 
-  if (!data) {
-    return <Occupier container>No preview data found.</Occupier>
-  }
-
-  return <{{.PascalCaseComponentName}}Component {...data} />
+	return (
+		<PreviewLoadingErrorHOC
+			initial={initial}
+			query={ {{.CamelCaseComponentName}}SlugQuery.query} 
+			queryParams={queryParams}
+			successFn={(data) => {
+				// TODO
+				return (
+				// TODO
+				<{{.PascalCaseComponentName}}PageBody PASS YOUR CUSTOM PROPS HERE />
+				)
+			}
+			}
+		/>
+	)
 }
 `
 
