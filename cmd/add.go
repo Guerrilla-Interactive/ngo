@@ -6,15 +6,22 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/Guerrilla-Interactive/ngo/files"
 	"github.com/spf13/cobra"
 )
 
+// This command is thread unsafe
+// because the flags are stored as global variables
+
 // addCmd represents the add command
 var (
-	routeName string
-	routeType string
-	addCmd    = &cobra.Command{
+	routeName             string // command flag
+	routeType             string // command flag
+	createSchema          bool   // command flag
+	createRouteComponents bool   // command flag
+	addCmd                = &cobra.Command{
 		Use:   "add",
 		Short: "add a route",
 		Long: `Add a route to your next project.
@@ -58,7 +65,6 @@ func createRoute(r RouteType, name string) error {
 		if err == nil {
 			// TODO
 			// Create appropriate files inside the app dir
-			// FOOBAR
 			switch r {
 			case StaticRoute:
 				createStaticRoute(appDir, name)
@@ -96,6 +102,7 @@ func init() {
 	rootCmd.AddCommand(addCmd)
 	addCmd.Flags().StringVarP(&routeType, "type", "t", "", "type dyanamic or type static")
 	addCmd.Flags().StringVarP(&routeName, "name", "n", "", "name of the route")
+	addCmd.Flags().BoolVarP(&createSchema, "schema", "s", true, "boolean indicating where a schema needs to be created")
 	addCmd.MarkFlagRequired("type")
 	addCmd.MarkFlagRequired("name")
 }
@@ -143,9 +150,74 @@ func getAppDir(dir string) (string, error) {
 // Create static route in the given app directory
 func createStaticRoute(appDir string, name string) {
 	fmt.Printf("creating static route %s under %s", name, appDir)
+	mainFolder := filepath.Join(appDir, name)
+	// if the name contains "/" take only the last part as the name of the route
+	routeParts := strings.Split(name, "/")
+	name = routeParts[len(routeParts)-1]
+
+	// If schema needs to be created
+	if createSchema {
+		// Note that we create schemas inside (index). We only create the schemas if it doesn't exist already!
+		schemasFolder := filepath.Join(mainFolder, fmt.Sprintf("/(index)/(%v-index-core)/(%v-index-server)", name, name))
+		CreatePathAndExitOnFail(schemasFolder)
+		// Files: schema for the route
+		// Add schema to sanity schemas
+	}
 }
 
 // Create dynamic route in the given app directory
 func createDynamicRoute(appDir string, name string) {
-	fmt.Printf("creating dynamic route %s under %s", name, appDir)
+	mainFolder := filepath.Join(appDir, name)
+	// if the name contains "/" take only the last part as the name of the route
+	routeParts := strings.Split(name, "/")
+
+	// Note that we are renaming name here to ignore any parent dirs in the name
+	name = routeParts[len(routeParts)-1]
+
+	slugFolder := filepath.Join(mainFolder, "[slug]")
+	slugCore := filepath.Join(slugFolder, fmt.Sprintf("%v-slug-core", name))
+	slugCoreDestination := filepath.Join(slugCore, fmt.Sprintf("%v-slug-destination", name))
+	CreatePathAndExitOnFail(slugCoreDestination)
+	// Files: preview and page.tsx
+	slugPreviewFilename := filepath.Join(slugCoreDestination, fmt.Sprintf("%v.slug-preview.tsx", name))
+	CreateFileContents(slugPreviewFilename, files.SlugPreview, name)
+	slugPageFilename := filepath.Join(slugCoreDestination, "page.tsx")
+	CreateFileContents(slugPageFilename, files.SlugPage, name)
+
+	slugCoreServer := filepath.Join(slugCore, fmt.Sprintf("%v-slug-server", name))
+	CreatePathAndExitOnFail(slugCoreServer)
+	// Files: slug queries, slug schema
+	if createSchema {
+		slugSchemaFilename := filepath.Join(slugCoreServer, fmt.Sprintf("%v.slug-schema.ts", name))
+		CreateFileContents(slugSchemaFilename, files.SlugSchema, name)
+	}
+	slugQueriesFilename := filepath.Join(slugCoreServer, fmt.Sprintf("%v.slug-query.tsx", name))
+	CreateFileContents(slugQueriesFilename, files.SlugQuery, name)
+
+	// Shared utils
+	// Note that here the "shared" refers to shared between the slug and the index page of the route
+	sharedUtilsFolder := filepath.Join(mainFolder, fmt.Sprintf("%v-shared-utils", name))
+	deskStructure := filepath.Join(sharedUtilsFolder, fmt.Sprintf("%v-desk-structure", name))
+	CreatePathAndExitOnFail(deskStructure)
+	// Files: desk-structure.ts
+	deskStructureFilename := filepath.Join(deskStructure, fmt.Sprintf("%v.desk-structure.ts", name))
+	_, err := os.Stat(deskStructureFilename)
+	// Only create the file if it doesn't exist
+	if errors.Is(err, os.ErrNotExist) {
+		CreateFileContents(deskStructureFilename, files.SharedDeskStructure, name)
+	} else if err != nil {
+		fmt.Println(err)
+	}
+
+	sharedQueries := filepath.Join(sharedUtilsFolder, fmt.Sprintf("%v-queries", name))
+	CreatePathAndExitOnFail(sharedQueries)
+	// Files: shared-queries.ts
+	sharedQueriesFilename := filepath.Join(sharedQueries, fmt.Sprintf("%v.shared-queries.ts", name))
+	_, err = os.Stat(sharedQueries)
+	// Only create the file if it doesn't exist
+	if errors.Is(err, os.ErrNotExist) {
+		CreateFileContents(sharedQueriesFilename, files.SharedQuery, name)
+	} else if err != nil {
+		fmt.Println(err)
+	}
 }

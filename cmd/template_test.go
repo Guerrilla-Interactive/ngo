@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import "testing"
 
@@ -13,7 +13,7 @@ func TestRouteVariableTemplate(t *testing.T) {
 		{"Test Name   Multiple space", RouteTemplateVariable{"test-name-multiple-space", "TestNameMultipleSpace", "testNameMultipleSpace"}},
 	}
 	for _, test := range tests {
-		got := routeTemplateVariable(test.title)
+		got := GetRouteTemplateVariable(test.title)
 		if got != test.exp {
 			t.Errorf("expected variable %v got %v", test.exp, got)
 		}

@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Guerrilla-Interactive/ngo/cmd"
 )
 
 func TestRouteTitleToFolderName(t *testing.T) {
@@ -56,7 +58,7 @@ func TestCreateFolder(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		_, fail := createFolder(tmpdir, test.name)
+		_, fail := cmd.CreateFolder(tmpdir, test.name)
 		if (fail != nil) != test.fail {
 			t.Errorf("expected fail %v but fail %v on creating %v", test.fail, fail != nil, test.name)
 		}

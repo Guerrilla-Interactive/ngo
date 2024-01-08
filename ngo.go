@@ -13,29 +13,17 @@ import (
 	"github.com/Guerrilla-Interactive/ngo/files"
 )
 
+type DocumentSchemasTemplateVariables struct {
+	Schemas []string
+}
+
+type PackageJSONTemplateVariables struct {
+	PackageName string
+}
+
 type ngo struct {
 	rootFolder string
 	sitemap    Sitemap
-}
-
-// Create folder named `name` under the directory with the path `parent`
-// Create intermediate directories if necessary
-func createFolder(parent string, name string) (string, error) {
-	newName := filepath.Join(parent, name)
-	// Create folder, including intermediaries
-	err := os.MkdirAll(newName, 0o755)
-	return newName, err
-}
-
-// Create folder named `name` under the directory with the path `parent` Kills
-// the process if any error in creating in the directory like out of space,
-// permission error, parent directory doesn't exist etc.
-func createFolderAndExitOnFail(parentDir string, name string) string {
-	newName, err := createFolder(parentDir, name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return newName
 }
 
 // Create file with full path filepath where with data as contents Calls
@@ -71,7 +59,7 @@ func routeTitleToFolderName(title string, routeType RouteType) string {
 // Recursively create files for a route at given parentDir
 func createRouteAt(r *Route, parentDir string, schemasCh chan<- string) {
 	name := routeTitleToFolderName(r.Title, r.Type)
-	created := createFolderAndExitOnFail(parentDir, name)
+	created := cmd.CreateFolderAndExitOnFail(parentDir, name)
 	done := make(chan bool)
 	for _, child := range r.Children {
 		child := child
@@ -101,7 +89,7 @@ func createRouteAt(r *Route, parentDir string, schemasCh chan<- string) {
 // generateTemplateVariable function
 func createFileContents(filename string, temp *template.Template, r *Route) {
 	b := new(bytes.Buffer)
-	templateVar := routeTemplateVariable(r.Title)
+	templateVar := cmd.GetRouteTemplateVariable(r.Title)
 	if err := temp.Execute(b, templateVar); err != nil {
 		log.Fatal(err)
 	}
@@ -150,9 +138,9 @@ func createDynamicRouteFilesAt(folder string, r *Route, schemasCh chan<- string)
 	createFileContents(file, files.SlugPage, r)
 
 	// Create core
-	core := createFolderAndExitOnFail(folder, "core")
-	serverFolderName := createFolderAndExitOnFail(core, fmt.Sprintf("(%v-server)", pageNamePrefix))
-	destinationFolderName := createFolderAndExitOnFail(core, fmt.Sprintf("(%v-destination)", pageNamePrefix))
+	core := cmd.CreateFolderAndExitOnFail(folder, "core")
+	serverFolderName := cmd.CreateFolderAndExitOnFail(core, fmt.Sprintf("(%v-server)", pageNamePrefix))
+	destinationFolderName := cmd.CreateFolderAndExitOnFail(core, fmt.Sprintf("(%v-destination)", pageNamePrefix))
 
 	// Files inside server
 	// page.slug-query.tsx
@@ -200,13 +188,13 @@ func (n *ngo) createFiles() {
 	createFileWithoutTemplateVar(n.rootFolder, "tsconfig.json", files.TSConfigJSON)
 
 	// Create src directory
-	src := createFolderAndExitOnFail(n.rootFolder, "src")
-	app := createFolderAndExitOnFail(src, "app")
+	src := cmd.CreateFolderAndExitOnFail(n.rootFolder, "src")
+	app := cmd.CreateFolderAndExitOnFail(src, "app")
 
 	// Sanity related directories
-	sanity := createFolderAndExitOnFail(n.rootFolder, "sanity")
-	sanitySchemas := createFolderAndExitOnFail(sanity, "schemas")
-	createFolderAndExitOnFail(src, "components")
+	sanity := cmd.CreateFolderAndExitOnFail(n.rootFolder, "sanity")
+	sanitySchemas := cmd.CreateFolderAndExitOnFail(sanity, "schemas")
+	cmd.CreateFolderAndExitOnFail(src, "components")
 
 	// Create routes inside the app directory
 	// TODO root route
