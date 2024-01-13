@@ -3,11 +3,11 @@ package cmd
 import "testing"
 
 func TestFoldernameToRouteType(t *testing.T) {
-	type Case struct {
+	type TestCase struct {
 		name string
 		kind RouteType
 	}
-	cases := []Case{
+	cases := []TestCase{
 		{"foobar", StaticRoute},
 		{"/(main)/foobar", StaticRoute},
 		{"/(foobar)/(xoo)/xyz", StaticRoute},
@@ -27,13 +27,13 @@ func TestFoldernameToRouteType(t *testing.T) {
 }
 
 func TestRouteTypeByPageTSXPath(t *testing.T) {
-	type Case struct {
+	type TestCase struct {
 		name string
 		kind RouteType
 		err  error
 	}
 	var bogusRouteType RouteType
-	cases := []Case{
+	cases := []TestCase{
 		{"page.tsx", bogusRouteType, errPagePathInsufficientLength},
 		// Note the leading space
 		{"foobar/ page.tsx", bogusRouteType, errPagePathInvalidName},
