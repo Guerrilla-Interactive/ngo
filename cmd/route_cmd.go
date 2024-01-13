@@ -19,12 +19,9 @@ var ErrMultipleFillerRoutesOnAFolder = errors.New("multiple filler routes on a f
 
 // routeCmd represents the route subcommand of the add command
 var (
-	routeName             string // command flag
-	routeType             string // command flag
-	createSchema          bool   // command flag
-	catchAllRoute         bool   // command flag
-	createRouteComponents bool   // command flag
-	routeCmd              = &cobra.Command{
+	routeName string // command flag
+	routeType string // command flag
+	routeCmd  = &cobra.Command{
 		Use:   "route",
 		Short: "add a route",
 		Long: `Add a route to your next project.
@@ -34,13 +31,14 @@ Routes can be static or dynamic. Specify the name of the route using the
 Creates a static route called about:
 ng add route --type static --name /about
 
-Note that the leading "/" may be ignored.
+Note that the leading "/" is mandatory.
 
 To create a dynamic route called categories:
-ng add route --type dynamic --name /categories
+ng add route --type dynamic --name /categories/[slug]
+where the word 'slug' could be replaced with one that you find appropriate
 
 If the dyanmic route is a catchall route, specify it as:
-ng add --type dynamic --name /categories --catchall`,
+ng add --type dynamic --name /categories/[...slug]`,
 
 		Run: func(_ *cobra.Command, _ []string) {
 			r, err := validateRouteType(routeType)
@@ -66,9 +64,6 @@ ng add --type dynamic --name /categories --catchall`,
 func validateFlagsUsage(parsedRouteType RouteType) {
 	// Ensure that the catchall flag is not used when the route isn't dynamic
 	if parsedRouteType == StaticRoute {
-		if catchAllRoute {
-			errExit("Catchall flag should only be used with dynamic route")
-		}
 	}
 }
 
@@ -93,8 +88,6 @@ func init() {
 	addCmd.AddCommand(routeCmd)
 	routeCmd.Flags().StringVar(&routeType, "type", "", "'dyanamic' or 'static'")
 	routeCmd.Flags().StringVar(&routeName, "name", "", "name of the route")
-	routeCmd.Flags().BoolVar(&createSchema, "schema", true, "boolean indicating where a schema needs to be created")
-	routeCmd.Flags().BoolVar(&catchAllRoute, "catchall", false, "boolean indicating whether the dynamic route is catch all")
 	routeCmd.MarkFlagRequired("type")
 	routeCmd.MarkFlagRequired("name")
 }
@@ -213,14 +206,14 @@ func createDynamicRoute(appDir string, name string) {
 	// Files: preview and page.tsx and body.tsx
 	slugPreviewFilename := filepath.Join(slugCoreDestination, fmt.Sprintf("%v.slug-preview.tsx", name))
 	CreateFileContents(slugPreviewFilename, files.SlugPreview, name)
-	slugPageFilename := filepath.Join(slugCoreDestination, "page.tsx")
-	if catchAllRoute {
-		CreateFileContents(slugPageFilename, files.SlugPageCatchAlll, name)
-		messages = append(messages, fmt.Sprintf("catch all page.tsx: %v", slugPageFilename))
-	} else {
-		CreateFileContents(slugPageFilename, files.SlugPage, name)
-		messages = append(messages, fmt.Sprintf("page.tsx: %v", slugPageFilename))
-	}
+	// slugPageFilename := filepath.Join(slugCoreDestination, "page.tsx")
+	// if catchAllRoute {
+	// 	CreateFileContents(slugPageFilename, files.SlugPageCatchAlll, name)
+	// 	messages = append(messages, fmt.Sprintf("catch all page.tsx: %v", slugPageFilename))
+	// } else {
+	// 	CreateFileContents(slugPageFilename, files.SlugPage, name)
+	// 	messages = append(messages, fmt.Sprintf("page.tsx: %v", slugPageFilename))
+	// }
 	bodyFilename := filepath.Join(slugCoreDestination, fmt.Sprintf("%v.body.tsx", name))
 	CreateFileContents(bodyFilename, files.PageSlugBody, name)
 	messages = append(messages, fmt.Sprintf("page body: %v", bodyFilename))
@@ -228,11 +221,9 @@ func createDynamicRoute(appDir string, name string) {
 	slugCoreServer := filepath.Join(slugCore, fmt.Sprintf("(%v-slug-server)", name))
 	CreatePathAndExitOnFail(slugCoreServer)
 	// Files: slug queries, slug schema
-	if createSchema {
-		slugSchemaFilename := filepath.Join(slugCoreServer, fmt.Sprintf("%v.slug-schema.ts", name))
-		CreateFileContents(slugSchemaFilename, files.SlugSchema, name)
-		messages = append(messages, fmt.Sprintf("slug schema: %v", slugSchemaFilename))
-	}
+	slugSchemaFilename := filepath.Join(slugCoreServer, fmt.Sprintf("%v.slug-schema.ts", name))
+	CreateFileContents(slugSchemaFilename, files.SlugSchema, name)
+	messages = append(messages, fmt.Sprintf("slug schema: %v", slugSchemaFilename))
 	slugQueriesFilename := filepath.Join(slugCoreServer, fmt.Sprintf("%v.slug-query.tsx", name))
 	CreateFileContents(slugQueriesFilename, files.SlugQuery, name)
 	messages = append(messages, fmt.Sprintf("slug query: %v", slugQueriesFilename))

@@ -13,6 +13,14 @@ const (
 	DynamicRoute RouteType = 2
 )
 
+type DynamicRouteType int
+
+const (
+	DynamicRoutePrimary          DynamicRouteType = 0
+	DynamicRouteCatchAll         DynamicRouteType = 1
+	DynamicRouteOptionalCatchAll DynamicRouteType = 2
+)
+
 const (
 	FillerRouteString  = "Filler"
 	StaticRouteString  = "Static"
