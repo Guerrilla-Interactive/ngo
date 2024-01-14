@@ -25,9 +25,18 @@ var (
 
 // Returns the kebabcase version of the title string
 func RouteTitleKebabCase(title string) string {
-	re := regexp.MustCompile(`\s+`)
 	name := strings.ToLower(title)
-	// Replace whitespace with -
+	re := regexp.MustCompile(`\s+`)
+
+	// Remote leading whitespace
+	leadingWS := regexp.MustCompile(`^\s+`)
+	name = leadingWS.ReplaceAllString(name, "")
+
+	// Remote trailing whitespace
+	trailingWS := regexp.MustCompile(`\s+$`)
+	name = trailingWS.ReplaceAllString(name, "")
+
+	// Replace other whitespace with -
 	name = re.ReplaceAllString(name, "-")
 	return name
 }
@@ -60,6 +69,21 @@ func AssertRouteNameValid(kind RouteType, name string) error {
 	}
 	routeParts := strings.Split(name, "/")
 	lastPart := routeParts[len(routeParts)-1]
+
+	// There should be no filler routes (except at last?)
+	// The input to "ngo add route" has to be as similar as possible
+	// of the "ngo ls" command
+	for i := 0; i < len(routeParts)-1; i++ {
+		if routeParts[i] == "" {
+			continue
+		}
+		if IsValidFillerRouteName(routeParts[i]) {
+			return fmt.Errorf("route name cannot contain filler route got %q", routeParts[i])
+		} else if !IsValidStaticRouteName(routeParts[i]) && !IsValidDynamicRouteName(routeParts[i]) {
+			return fmt.Errorf("invalid route name %q", routeParts[i])
+		}
+	}
+
 	// TODO
 	// What should we say about filler routes in the route name?
 	// Should they exist?
@@ -71,7 +95,7 @@ func AssertRouteNameValid(kind RouteType, name string) error {
 	case DynamicRoute:
 		// Dynamic Route [slug]
 		if !IsValidDynamicRouteName(lastPart) {
-			return errors.New("dynamic route must end with [alphanum] or [...alphanum] or [[...alphanum]] where alphanum can be replaced with word of your choice")
+			return errors.New("dynamic route must end with [slug] or [...slug] or [[...slug]] where `slug` can be replaced with word of your choice")
 		}
 	case FillerRoute:
 		if !IsValidFillerRouteName(lastPart) {
@@ -105,4 +129,26 @@ func GetDynamicRouteType(candidate string) (DynamicRouteType, error) {
 	}
 	var bogus DynamicRouteType
 	return bogus, errors.New("not a valid dynamic route type name")
+}
+
+// Return the route type based on the given candiate string
+// also return non nil error when the input is invalid (i.e. no route type
+// exists for the given name)
+func praseRouteType(candidate string) (RouteType, error) {
+	candidateLower := strings.ToLower(candidate)
+	switch candidateLower {
+	case "static":
+		return StaticRoute, nil
+	case "dynamic":
+		return DynamicRoute, nil
+	case "filler":
+		return FillerRoute, nil
+	}
+	return StaticRoute, fmt.Errorf("invalid route type. valid types are static, dynamic, filler got %q", candidate)
+}
+
+// Return the route name based on the given candiate string
+// also return non nil error for when the input is invalid
+func praseRouteName(candidate string) (string, error) {
+	return RouteTitleKebabCase(candidate), nil
 }
