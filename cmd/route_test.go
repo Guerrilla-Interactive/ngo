@@ -69,3 +69,44 @@ func TestRouteTypeByPageTSXPath(t *testing.T) {
 		}
 	}
 }
+
+func TestGetParentRouteOfStaticRoute(t *testing.T) {
+	type TestCase struct {
+		name     string
+		expected string
+	}
+	cases := []TestCase{
+		{"/", "/"},
+		{"/foobar", "/"},
+		{"/foobar/suman", "/foobar"},
+		{"/foobar/suman", "/foobar"},
+		{"/foobar/[slug]/suman", "/foobar/[slug]"},
+	}
+	for _, testcase := range cases {
+		got := GetParentRouteOfStaticRoute(testcase.name)
+		if testcase.expected != got {
+			t.Errorf("GetParentRouteOfStaticRout(%q) returned %v wanted %v", testcase.name, got, testcase.expected)
+		}
+	}
+}
+
+func TestDynamicRoutePartUnifiedRouteName(t *testing.T) {
+	type TestCase struct {
+		name     string
+		expected string
+	}
+	cases := []TestCase{
+		{"/", "/"},
+		{"/foobar", "/foobar"},
+		{"/foobar/suman", "/foobar/suman"},
+		{"/foobar/[slug]/suman", "/foobar/[slug]/suman"},
+		{"/foobar/[...foo]/suman", "/foobar/[...slug]/suman"},
+		{"/foobar/[[...foo]]/suman", "/foobar/[[...slug]]/suman"},
+	}
+	for _, testcase := range cases {
+		got := DynamicRoutePartUnifiedRouteName(testcase.name)
+		if testcase.expected != got {
+			t.Errorf("DynamicRoutePartUnifiedRouteName(%q) returned %v wanted %v", testcase.name, got, testcase.expected)
+		}
+	}
+}

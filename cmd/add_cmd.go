@@ -11,7 +11,10 @@ import (
 )
 
 // Errors
-var ErrMultipleFillerRoutesOnAFolder = errors.New("multiple filler routes on a folder")
+var (
+	ErrMultipleFillerRoutesOnAFolder = errors.New("multiple filler routes on a folder")
+	ErrFillerNotImplemented          = errors.New("ability to add filler route is not implemented")
+)
 
 // This command is thread unsafe
 // because the flags are stored as global variables
@@ -46,6 +49,9 @@ ng add --type dynamic --name "/categories/[...slug]"`,
 			if err != nil {
 				errExit(err)
 			}
+			if r == FillerRoute {
+				errExit(ErrFillerNotImplemented)
+			}
 			// Get parsed route name (ex. without whitspaces)
 			n, err := praseRouteName(routeName)
 			if err != nil {
@@ -72,14 +78,63 @@ func init() {
 
 // Create a route of given type and name
 // If no nextjs project exists (determined by presence of package.json)
-// in the current folder or any of the parents then throw error
+// in the current folder or any of the parents then exit with error
+// Preconditions:
+// 1. r is either a StaticRoute or a DynamicRoute
+// 2. name is a valid route name of the appropriate route type (r).
 func createRoute(r RouteType, name string) {
+	// Precondition check
+	if err := AssertRouteNameValid(r, name); err != nil {
+		panic(err)
+	}
 	// Fail if the given route already exists
 	appDir, err := GetAppDirFromWorkingDir()
 	if err != nil {
 		errExit(err)
 	}
 	routes := GetRoutes(appDir)
+	// We create a string of routes to be able to check what routes exists
+	routeStrs := make([]string, 0)
+	for _, r := range routes {
+		trimmedPath := RouteFromPagePath(r.pathToPage, appDir)
+		routeStrs = append(routeStrs, DynamicRoutePartUnifiedRouteName(trimmedPath))
+	}
+	existsRoute := func(candidate string) bool {
+		return slices.Contains(routeStrs, candidate)
+	}
+	// Remove the leading / is name
+	nameLeadinSlashTrimmed := strings.TrimPrefix(name, "/")
+	routeParts := strings.Split(nameLeadinSlashTrimmed, "/")
+	secondLastRoutePartIndex := len(routeParts) - 2
+	// Note that if this is a dynamic route, it contains extra flavor of
+	// [...slug] or its variant that needs to be removed
+	if r == DynamicRoute {
+		secondLastRoutePartIndex--
+	}
+
+	var preExistingRoute string
+	for i := 0; i <= secondLastRoutePartIndex; i++ {
+		var routeSoFar string
+		// Look ahead to check if it's a dynamic route
+		// Otherwise the routeSoFar will be incorrectly built
+		if i < secondLastRoutePartIndex {
+			if IsValidDynamicRouteName(routeParts[i+1]) {
+				i++
+			}
+		}
+		routeSoFar = fmt.Sprintf("/%v", strings.Join(routeParts[:i+1], "/"))
+		// Check if the route so far exists
+		if existsRoute(DynamicRoutePartUnifiedRouteName(routeSoFar)) {
+			preExistingRoute = routeSoFar
+		} else {
+			break
+		}
+	}
+
+	fmt.Printf("route is to created as children of %q\n", preExistingRoute)
+
+	// First we need to find the location at which we can create the route
+	// To do that we first find the last parent of the route that doesn't exist
 	switch r {
 	case DynamicRoute:
 		fmt.Println("pass")
@@ -98,13 +153,26 @@ func createRoute(r RouteType, name string) {
 			routeStrs = append(routeStrs, trimmedPath)
 		}
 		if slices.Contains(routeStrs, name) {
-			fmt.Printf("static route %q already exists\n", name)
+			errExit(fmt.Sprintf("static route %q already exists\n", name))
 		} else {
-			fmt.Printf("get location to create static route")
+			fmt.Printf("get location to create static route\n")
 			// createStaticRoute(appDir, name)
 		}
 	case FillerRoute:
-		errExit("feature to create a filler route isn't implemented")
+		errExit(ErrFillerNotImplemented)
+	default:
+		panic(fmt.Sprintf("unrecognized route - %v\n", r))
+	}
+}
+
+// Return the location to create route
+func locationToCreateRoute(routeName string, kind RouteType) (string, error) {
+	switch kind {
+	case StaticRoute:
+		parentRoute := GetParentRouteOfStaticRoute(routeName)
+		return parentRoute, nil
+	default:
+		return "", fmt.Errorf("unsupported route type by func locationToCreateRoute got %v", kind)
 	}
 }
 
