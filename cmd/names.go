@@ -52,13 +52,13 @@ func AssertRouteNameValid(kind RouteType, name string) error {
 	// because we require a leading slash but not trailing so its easy
 	// to write code that considers '/' as invalid route name but it's
 	// a valid static root route.
-	if name == "/" {
+	if name == "/" && kind == StaticRoute {
 		return nil
 	}
 	if !strings.HasPrefix(name, "/") {
 		return errMissingLeadingSlashInRouteName
 	}
-	if strings.HasSuffix(name, "/") {
+	if strings.HasSuffix(name, "/") && name != "/" {
 		return errTrailingSlashInRouteName
 	}
 	if strings.Contains(name, "//") {
