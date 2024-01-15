@@ -69,21 +69,6 @@ func GetRootRouteByWalkingFillers(pagePath string) string {
 	return toReturn
 }
 
-// Precondition
-// routeName is a valid static route name
-func GetParentRouteOfStaticRoute(routeName string) string {
-	if err := AssertRouteNameValid(StaticRoute, routeName); err != nil {
-		panic("precondition violated")
-	}
-	routeParts := strings.Split(routeName, "/")
-	exceptLast := routeParts[:len(routeParts)-1]
-	result := strings.Join(exceptLast, "/")
-	if result == "" {
-		return "/"
-	}
-	return result
-}
-
 // Replace the dynamic route name part of the route name with
 // some keyword so that comparision works.
 func DynamicRoutePartUnifiedRouteName(name string) string {
@@ -109,4 +94,16 @@ func RouteExists(name string, routes []Route, appDir string) (Route, error) {
 		// Meaning, match between CatchAll, OptionalCatchAll, etc.
 	}
 	return toReturn, fmt.Errorf("route of name %v not found", name)
+}
+
+func GetDynamicRouteKindType(name string) (DynamicRouteType, error) {
+	if DynamicRouteNameRegex.Match([]byte(name)) {
+		return DynamicRoutePrimary, nil
+	} else if DynamicRouteCatchAllNameRegex.Match([]byte(name)) {
+		return DynamicRouteCatchAll, nil
+	} else if DynamicRouteOptionalCatchAllNameRegex.Match([]byte(name)) {
+		return DynamicRouteOptionalCatchAll, nil
+	}
+	var bogus DynamicRouteType
+	return bogus, fmt.Errorf("name %q doesn't match dynamic route naming convention", name)
 }

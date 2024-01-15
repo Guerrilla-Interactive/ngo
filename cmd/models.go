@@ -25,6 +25,10 @@ const (
 	FillerRouteString  = "Filler"
 	StaticRouteString  = "Static"
 	DyanmicRouteString = "Dynamic"
+
+	DyanmicRoutePrimaryString          = "dynamic route [slug]"
+	DyanmicRouteCatchAllString         = "catchall dynamic route [...slug]"
+	DyanmicRouteOptionalCatchAllString = "optional catchall dynamic route [[...slug]]"
 )
 
 type RouteTemplateVariable struct {
@@ -46,6 +50,17 @@ func (r RouteType) String() string {
 		return StaticRouteString
 	default:
 		return DyanmicRouteString
+	}
+}
+
+func (r DynamicRouteType) String() string {
+	switch r {
+	case DynamicRoutePrimary:
+		return DyanmicRoutePrimaryString
+	case DynamicRouteCatchAll:
+		return DyanmicRouteCatchAllString
+	default:
+		return DyanmicRouteOptionalCatchAllString
 	}
 }
 
