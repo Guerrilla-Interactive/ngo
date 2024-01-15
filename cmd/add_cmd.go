@@ -31,7 +31,7 @@ Routes can be static or dynamic. Specify the name of the route using the
 --name flag and type ('dynamic'/'static') using the --type flag).
 
 Creates a static route called about:
-ng add --type static --name /about
+ng add --type static --name "/about"
 
 Note that the leading "/" is mandatory and no trailing slash allowed.
 Static root route is represented by "/"
