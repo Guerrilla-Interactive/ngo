@@ -93,14 +93,15 @@ func createRoute(r RouteType, name string) {
 		errExit(err)
 	}
 	routes := GetRoutes(appDir)
-	// We create a string of routes to be able to check what routes exists
-	routeStrs := make([]string, 0)
-	for _, r := range routes {
-		trimmedPath := RouteFromPagePath(r.pathToPage, appDir)
-		routeStrs = append(routeStrs, DynamicRoutePartUnifiedRouteName(trimmedPath))
-	}
 	existsRoute := func(candidate string) bool {
-		return slices.Contains(routeStrs, candidate)
+		_, err := RouteExists(candidate, routes, appDir)
+		return err == nil
+	}
+	if foundRoute, err := RouteExists(name, routes, appDir); err == nil {
+		errExit(fmt.Sprintf("%v - route - %v already exists",
+			RouteFromPagePath(foundRoute.pathToPage, appDir),
+			name,
+		))
 	}
 	// Remove the leading / is name
 	nameLeadinSlashTrimmed := strings.TrimPrefix(name, "/")
@@ -111,8 +112,7 @@ func createRoute(r RouteType, name string) {
 	if r == DynamicRoute {
 		secondLastRoutePartIndex--
 	}
-
-	var preExistingRoute string
+	var preExistingRouteString string
 	for i := 0; i <= secondLastRoutePartIndex; i++ {
 		var routeSoFar string
 		// Look ahead to check if it's a dynamic route
@@ -125,19 +125,28 @@ func createRoute(r RouteType, name string) {
 		routeSoFar = fmt.Sprintf("/%v", strings.Join(routeParts[:i+1], "/"))
 		// Check if the route so far exists
 		if existsRoute(DynamicRoutePartUnifiedRouteName(routeSoFar)) {
-			preExistingRoute = routeSoFar
+			preExistingRouteString = routeSoFar
 		} else {
 			break
 		}
 	}
-
-	fmt.Printf("route is to created as children of %q\n", preExistingRoute)
-
+	preExistingRoute, err := RouteExists(preExistingRouteString, routes, appDir)
+	if err != nil {
+		panic(fmt.Errorf("expected %v to exist, can't find", preExistingRoute.pathToPage))
+	}
+	var locationToCreateRoute string
+	// If preExistingRoute is "", expected to create at appDir level
+	if preExistingRouteString == "" {
+		locationToCreateRoute = appDir
+	} else {
+		// Traverse up from page.tsx of the preExistingRoute page path walking up filler routes
+		locationToCreateRoute = GetRootRouteByWalkingFillers(preExistingRoute.pathToPage)
+	}
+	fmt.Printf("Creating route at:\n%v\n", locationToCreateRoute)
 	// First we need to find the location at which we can create the route
 	// To do that we first find the last parent of the route that doesn't exist
 	switch r {
 	case DynamicRoute:
-		fmt.Println("pass")
 		// for _, r := range routes {
 		// 	trimmedPath := RouteFromPagePath(r.pathToPage, appDir)
 		// 	routeParts := strings.Split(trimmedPath, "/")

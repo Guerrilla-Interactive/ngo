@@ -16,8 +16,8 @@ var (
 )
 
 var (
-	FillerRouteNameRegex = regexp.MustCompile(`^\([[:alnum:]]+\)$`)
-	StaticRouteNameRegex = regexp.MustCompile(`^[[:alpha:]]+$`)
+	FillerRouteNameRegex = regexp.MustCompile(`^\([[[:alnum:]]|-]+\)$`)
+	StaticRouteNameRegex = regexp.MustCompile(`^[[[:alpha:]]|-]+$`)
 
 	DynamicRouteNameRegex                 = regexp.MustCompile(`^\[[[:alnum:]]+\]$`)
 	DynamicRouteCatchAllNameRegex         = regexp.MustCompile(`^\[\.\.\.[[:alnum:]]+\]$`)

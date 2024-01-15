@@ -110,3 +110,22 @@ func TestDynamicRoutePartUnifiedRouteName(t *testing.T) {
 		}
 	}
 }
+
+func TestGetRootRouteByWalkingFillers(t *testing.T) {
+	type TestCase struct {
+		name     string
+		expected string
+	}
+	cases := []TestCase{
+		{"/page.tsx", "/"},
+		{"/app/src/(index)/page.tsx", "/app/src"},
+		{"/app/src/(index)/(main-destination)/page.tsx", "/app/src"},
+		{"/app/src/pieces/(index)/page.tsx", "/app/src/pieces"},
+	}
+	for _, testcase := range cases {
+		got := GetRootRouteByWalkingFillers(testcase.name)
+		if testcase.expected != got {
+			t.Errorf("GetRootRouteByWalkingFillers(%q) returned %v wanted %v", testcase.name, got, testcase.expected)
+		}
+	}
+}
