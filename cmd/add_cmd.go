@@ -154,9 +154,15 @@ func createRoute(r RouteType, name string) {
 		if err != nil {
 			errExit(err)
 		}
+		// Create the `routeLocation` folder, along with its parents that don't exist
+		// Note that we don't extract this logic for both Static and Dynamic route as
+		// fine-graining allows us to create route only after route kind specific error-checking.
+		CreatePathAndExitOnFail(routeLocation)
 		createDynamicRoute(routeLocation, dynameRouteName, dynamicRouteKind)
 	case StaticRoute:
 		staticRouteName := routeParts[len(routeParts)-1]
+		// Create the `routeLocation` folder, along with its parents that don't exist
+		CreatePathAndExitOnFail(routeLocation)
 		createStaticRoute(routeLocation, staticRouteName)
 	case FillerRoute:
 		errExit(ErrFillerNotImplemented)
@@ -169,7 +175,7 @@ func createRoute(r RouteType, name string) {
 // Preconditions:
 // name is valid static route name to be created at the location `at`
 func createStaticRoute(at string, name string) {
-	fmt.Printf("creating static route %v at %v", name, at)
+	fmt.Printf("Creating static route at:\n%v\n", at)
 	// if the name contains "/" take only the last part as the name of the route
 	routeParts := strings.Split(name, "/")
 	name = routeParts[len(routeParts)-1]
@@ -184,7 +190,8 @@ func createStaticRoute(at string, name string) {
 
 // Create dynamic route in the given app directory
 func createDynamicRoute(at string, name string, kind DynamicRouteType) {
-	fmt.Printf("creating %v - %v at %v", kind, name, at)
+	fmt.Printf("Creating %v at:\n%v\n", kind, at)
+
 	// messages := make([]string, 0)
 	// mainFolder := filepath.Join(appDir, name)
 	// // if the name contains "/" take only the last part as the name of the route

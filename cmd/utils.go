@@ -28,8 +28,8 @@ func CreateFolderAndExitOnFail(parentDir string, name string) string {
 	return newName
 }
 
-// Create the specified path specified and exit on fail
-// return the path thus created as output
+// Create the specified path specified (along with intermediate folders)
+// return the path thus created as output. This function exits the program on fail
 func CreatePathAndExitOnFail(path string) string {
 	err := os.MkdirAll(path, 0o755)
 	if err != nil {
