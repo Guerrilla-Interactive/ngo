@@ -132,17 +132,17 @@ func createRoute(r RouteType, name string) {
 	// Trim the route name by removing pre-existing route string
 	trimmedName := strings.TrimPrefix(name, preExistingRouteString)
 
-	preExistingRoute, err := RouteExists(preExistingRouteString, routes, appDir)
-	if err != nil {
-		panic(fmt.Errorf("expected %v to exist, can't find", preExistingRoute.pathToPage))
-	}
 	var locationToCreateRoute string
 	// If preExistingRoute is "", expected to create at appDir level
 	if preExistingRouteString == "" {
 		locationToCreateRoute = appDir
 	} else {
 		// Traverse up from page.tsx of the preExistingRoute page path walking up filler routes
+		preExistingRoute, err := RouteExists(preExistingRouteString, routes, appDir)
 		locationToCreateRoute = GetRootRouteByWalkingFillers(preExistingRoute.pathToPage)
+		if err != nil {
+			panic(fmt.Errorf("expected %q to exist, can't find", preExistingRoute.pathToPage))
+		}
 	}
 	routeLocation := filepath.Join(locationToCreateRoute, trimmedName)
 	// First we need to find the location at which we can create the route
@@ -175,6 +175,10 @@ func createRoute(r RouteType, name string) {
 // Preconditions:
 // name is valid static route name to be created at the location `at`
 func createStaticRoute(at string, name string) {
+	// Handle root route
+	if name == "" {
+		name = "root"
+	}
 	fmt.Printf("Creating static route at:\n%v\n", at)
 	// if the name contains "/" take only the last part as the name of the route
 	routeParts := strings.Split(name, "/")
