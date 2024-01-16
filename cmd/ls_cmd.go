@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -20,6 +21,7 @@ var lsCmd = &cobra.Command{
 			errExit(err)
 		}
 		routes := GetRoutes(appDir)
+		sort.Sort(ByRouteLength(routes))
 		for _, r := range routes {
 			trimmedPath := RouteFromPagePath(r.pathToPage, appDir)
 			fmt.Printf("%v - %v\n", r.kind, trimmedPath)

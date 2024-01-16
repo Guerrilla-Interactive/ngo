@@ -42,6 +42,17 @@ type Route struct {
 	kind       RouteType
 }
 
+// Implement the sort interface by RouteLength
+type ByRouteLength []Route
+
+func (a ByRouteLength) Len() int      { return len(a) }
+func (a ByRouteLength) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByRouteLength) Less(i, j int) bool {
+	iLen := len(strings.Split(a[i].pathToPage, "/"))
+	jLen := len(strings.Split(a[j].pathToPage, "/"))
+	return iLen < jLen
+}
+
 func (r RouteType) String() string {
 	switch r {
 	case FillerRoute:
