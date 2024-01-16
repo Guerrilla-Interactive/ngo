@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Guerrilla-Interactive/ngo/files"
 	"github.com/spf13/cobra"
 )
 
@@ -161,6 +162,9 @@ func createRoute(r RouteType, name string) {
 		createDynamicRoute(routeLocation, dynameRouteName, dynamicRouteKind)
 	case StaticRoute:
 		staticRouteName := routeParts[len(routeParts)-1]
+		if staticRouteName == "" {
+			staticRouteName = "root"
+		}
 		// Create the `routeLocation` folder, along with its parents that don't exist
 		CreatePathAndExitOnFail(routeLocation)
 		createStaticRoute(routeLocation, staticRouteName)
@@ -175,21 +179,38 @@ func createRoute(r RouteType, name string) {
 // Preconditions:
 // name is valid static route name to be created at the location `at`
 func createStaticRoute(at string, name string) {
-	// Handle root route
-	if name == "" {
-		name = "root"
-	}
 	fmt.Printf("Creating static route at:\n%v\n", at)
-	// if the name contains "/" take only the last part as the name of the route
-	routeParts := strings.Split(name, "/")
-	name = routeParts[len(routeParts)-1]
 
-	// If schema needs to be created
-	// Note that we create schemas inside (index). We only create the schemas if it doesn't exist already!
-	schemasFolder := filepath.Join(at, fmt.Sprintf("/(index)/(%v-index-core)/(%v-index-server)", name, name))
-	CreatePathAndExitOnFail(schemasFolder)
-	// Files: schema for the route
-	// Add schema to sanity schemas
+	schemasAndQueryFolder := filepath.Join(at, fmt.Sprintf("/(index)/(%v-index-core)/(%v-index-server)", name, name))
+	pageAndPreviewFolder := filepath.Join(at, fmt.Sprintf("/(index)/(%v-index-core)/(%v-index-destination)", name, name))
+	// Create folders
+	CreatePathAndExitOnFail(schemasAndQueryFolder)
+	CreatePathAndExitOnFail(pageAndPreviewFolder)
+
+	// Schema file
+	schemaFilename := filepath.Join(schemasAndQueryFolder, fmt.Sprintf("%v.index-schema.tsx", name))
+	CreateFileContents(schemaFilename, files.QuerySchema, name)
+
+	// Query file
+	queryFilename := filepath.Join(schemasAndQueryFolder, fmt.Sprintf("%v.index-query.tsx", name))
+	CreateFileContents(queryFilename, files.Query, name)
+
+	// Page file
+	pageFilename := filepath.Join(pageAndPreviewFolder, "page.tsx")
+	CreateFileContents(pageFilename, files.Page, name)
+
+	// Preview file
+	previewFilename := filepath.Join(pageAndPreviewFolder, fmt.Sprintf("%v.index-preview.tsx", name))
+	CreateFileContents(previewFilename, files.Preview, name)
+
+	CreatedMsg([]string{schemaFilename, queryFilename, pageFilename, previewFilename})
+}
+
+func CreatedMsg(files []string) {
+	fmt.Println("Created files:")
+	for _, file := range files {
+		fmt.Println(file)
+	}
 }
 
 // Create dynamic route in the given app directory
