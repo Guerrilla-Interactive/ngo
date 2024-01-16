@@ -179,7 +179,7 @@ func createRoute(r RouteType, name string) {
 // Preconditions:
 // name is valid static route name to be created at the location `at`
 func createStaticRoute(at string, name string) {
-	fmt.Printf("Creating static route at:\n%v\n", at)
+	fmt.Printf("Creating static route at:\n%v\n\n", at)
 
 	schemasAndQueryFolder := filepath.Join(at, fmt.Sprintf("/(index)/(%v-index-core)/(%v-index-server)", name, name))
 	pageAndPreviewFolder := filepath.Join(at, fmt.Sprintf("/(index)/(%v-index-core)/(%v-index-destination)", name, name))
@@ -215,7 +215,7 @@ func CreatedMsg(files []string) {
 
 // Create dynamic route in the given app directory
 func createDynamicRoute(at string, name string, kind DynamicRouteType) {
-	fmt.Printf("Creating %v at:\n%v\n", kind, at)
+	fmt.Printf("Creating %v at:\n%v\n\n", kind, at)
 
 	// messages := make([]string, 0)
 	// mainFolder := filepath.Join(appDir, name)
