@@ -201,7 +201,11 @@ func createStaticRoute(at string, name string) {
 
 	// Preview file
 	previewFilename := filepath.Join(pageAndPreviewFolder, fmt.Sprintf("%v.index-preview.tsx", name))
-	CreateFileContents(previewFilename, files.Preview, name)
+	CreateFileContents(previewFilename, files.IndexPreview, name)
+
+	// Page body Component file
+	pageBodyComponentFilename := filepath.Join(pageAndPreviewFolder, fmt.Sprintf("%v.index-component.tsx", name))
+	CreateFileContents(pageBodyComponentFilename, files.PageIndexBody, name)
 
 	CreatedMsg([]string{schemaFilename, queryFilename, pageFilename, previewFilename})
 }

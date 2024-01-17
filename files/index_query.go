@@ -2,9 +2,10 @@ package files
 
 import "text/template"
 
-const indexQuery = `import { basePageQuery } from "@/sanity/shame-queries/base-page.query"
-import type { InferType } from "groqd"
+const indexQuery = `import type { InferType } from "groqd"
 import { q } from "groqd"
+
+import { basePageQuery } from "@/sanity/shame-queries/base-page.query"
 
 export const {{.CamelCaseComponentName}}IndexQuery = q("*")
     .filterByType("{{.CamelCaseComponentName}}")
@@ -13,7 +14,6 @@ export const {{.CamelCaseComponentName}}IndexQuery = q("*")
         ...basePageQuery,
     })
     .slice(0)
-    .nullable()
 
 export type {{.PascalCaseComponentName}}IndexQuery = NonNullable<InferType<typeof {{.CamelCaseComponentName}}IndexQuery>>
 `
