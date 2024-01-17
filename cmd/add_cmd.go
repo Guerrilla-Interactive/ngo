@@ -193,7 +193,7 @@ func createStaticRoute(at string, name string) {
 
 	// Query file
 	queryFilename := filepath.Join(schemasAndQueryFolder, fmt.Sprintf("%v.index-query.tsx", name))
-	CreateFileContents(queryFilename, files.Query, name)
+	CreateFileContents(queryFilename, files.IndexQuery, name)
 
 	// Page file
 	pageFilename := filepath.Join(pageAndPreviewFolder, "page.tsx")

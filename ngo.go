@@ -115,7 +115,7 @@ func createStaticRouteFilesAt(folder string, r *Route) {
 	// page.query.tsx
 	query := fmt.Sprintf("%v.query.tsx", pageNamePrefix)
 	file = filepath.Join(folder, query)
-	createFileContents(file, files.Query, r)
+	createFileContents(file, files.IndexQuery, r)
 
 	// page.preview.tsx
 	preview := fmt.Sprintf("%v.preview.tsx", pageNamePrefix)
@@ -145,7 +145,7 @@ func createDynamicRouteFilesAt(folder string, r *Route, schemasCh chan<- string)
 	// Files inside server
 	// page.slug-query.tsx
 	file = filepath.Join(serverFolderName, fmt.Sprintf("%v.slug-query.tsx", pageNamePrefix))
-	createFileContents(file, files.Query, r)
+	createFileContents(file, files.IndexQuery, r)
 
 	// page.slug-schema.ts
 	file = filepath.Join(serverFolderName, fmt.Sprintf("%v.slug-schema.ts", pageNamePrefix))
