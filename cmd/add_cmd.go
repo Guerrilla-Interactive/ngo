@@ -189,7 +189,7 @@ func createStaticRoute(at string, name string) {
 
 	// Schema file
 	schemaFilename := filepath.Join(schemasAndQueryFolder, fmt.Sprintf("%v.index-schema.tsx", name))
-	CreateFileContents(schemaFilename, files.QuerySchema, name)
+	CreateFileContents(schemaFilename, files.IndexSchema, name)
 
 	// Query file
 	queryFilename := filepath.Join(schemasAndQueryFolder, fmt.Sprintf("%v.index-query.tsx", name))

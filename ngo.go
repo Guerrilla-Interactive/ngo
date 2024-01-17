@@ -150,7 +150,7 @@ func createDynamicRouteFilesAt(folder string, r *Route, schemasCh chan<- string)
 	// page.slug-schema.ts
 	file = filepath.Join(serverFolderName, fmt.Sprintf("%v.slug-schema.ts", pageNamePrefix))
 	schemasCh <- file // Send the schema file name to the schemasCh
-	createFileContents(file, files.QuerySchema, r)
+	createFileContents(file, files.IndexSchema, r)
 
 	// Files inside destination
 	// page.slug-preview.tsx
