@@ -3,29 +3,27 @@ package files
 import "text/template"
 
 const indexPreview = `"use client"
+import { PreviewLoadingErrorHOC } from '@/components/preview/preview-wrapper'
 
-import { PreviewLoadingErrorHOC } from "@/src/components/sanity/preview-loading-error-hoc"
+import type { {{.PascalCaseComponentName}}IndexQuery} from '../({{.KebabCaseComponentName}}-index-server)/{{.KebabCaseComponentName}}.index-query';
+import { {{.CamelCaseComponentName}}IndexQuery } from '../({{.KebabCaseComponentName}}-index-server)/{{.KebabCaseComponentName}}.index-query'
+import {{.PascalCaseComponentName}}IndexBody from './{{.KebabCaseComponentName}}.index-component'
 
-import { {{.PascalCaseComponentName}}IndexPage } from "../../pieces.index-page"
-import type { PiecesIndexQuery } from "../(pieces-index-server)/pieces.index-query"
-import { piecesIndexQuery } from "../(pieces-index-server)/pieces.index-query"
+interface PreviewProps {
+  initial: {{.PascalCaseComponentName}}IndexQuery
+  queryParams?: { slug: string }
+}
 
-export const PiecesIndexPreview = ({
-  initial,
-  queryParams
-}: {
-  initial: PiecesIndexQuery
-  queryParams: Record<string, string>
-}) => {
+export function {{.PascalCaseComponentName}}Preview(props: PreviewProps) {
   return (
-    <PreviewLoadingErrorHOC
-      initial={initial}
-      query={piecesIndexQuery.query}
-      successFn={(data) =>
-        <PiecesIndexPage {...data} />
-      }
-    />
+    <PreviewLoadingErrorHOC 
+	initial={props.initial}
+	query={ {{.CamelCaseComponentName}}IndexQuery.query} 
+	successFn={(data) =>
+		<{{.PascalCaseComponentName}}IndexBody data={data} />}
+	/>
   )
-}`
+}
+`
 
 var IndexPreview = template.Must(template.New("indexPreview").Parse(indexPreview))
