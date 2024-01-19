@@ -8,7 +8,7 @@ import type { CustomDocumentDefinition } from '@/sanity/api.desk-structure.ts'
 import { defaultGroups } from '@/sanity/schema-utils/default-groups.util'
 import { metaFields } from '@/sanity/schema-utils/generator-field/meta-fields.field'
 
-export const {{.CamelCaseComponentName}}SlugSchema = defineType({
+export const {{.CamelCaseComponentName}}IndexSchema = defineType({
   type: "document",
   name: "{{.CamelCaseComponentName}}",
   title: "{{.PascalCaseComponentName}}",
