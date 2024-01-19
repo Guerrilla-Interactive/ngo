@@ -159,3 +159,15 @@ func praseRouteType(candidate string) (RouteType, error) {
 func praseRouteName(candidate string) (string, error) {
 	return RouteTitleKebabCase(candidate), nil
 }
+
+func schemaExportName(routeName string, routeType RouteType) (string, error) {
+	nameVar := GetRouteTemplateVariable(routeName)
+	switch routeType {
+	case StaticRoute:
+		return fmt.Sprintf("%vIndexSchema", nameVar.CamelCaseComponentName), nil
+	case DynamicRoute:
+		return fmt.Sprintf("%vSlugSchema", nameVar.CamelCaseComponentName), nil
+	default:
+		return "", errors.New("not implemented for given route")
+	}
+}

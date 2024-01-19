@@ -208,6 +208,19 @@ func createStaticRoute(at string, name string) {
 	CreateFileContents(pageBodyComponentFilename, files.PageIndexBody, name)
 
 	CreatedMsg([]string{schemaFilename, queryFilename, pageFilename, previewFilename})
+	fmt.Println("foobar")
+
+	// Import the schema into documents.ts
+	schemaExportName, _ := schemaExportName(name, StaticRoute)
+	err := AddSchemaImportStatement(schemaFilename, schemaExportName)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		schemaDocs, _ := GetSanityDocumentSchemas()
+		fmt.Println("Added schema to", schemaDocs)
+	}
+
+	// Add the schema into desk structure
 }
 
 func CreatedMsg(files []string) {

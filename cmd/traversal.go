@@ -62,3 +62,22 @@ func getAppDir(dir string) (string, error) {
 		return app, nil
 	}
 }
+
+// Get the sanity documents schema filename string, returns
+// error if the file doesn't exist
+func GetSanityDocumentSchemas() (string, error) {
+	var toReturn string
+	wd, err := os.Getwd()
+	if err != nil {
+		return toReturn, nil
+	}
+	dir, err := getPackageJSONLevelDir(wd)
+	if err != nil {
+		return toReturn, nil
+	}
+	toReturn = filepath.Join(dir, "sanity/schemas/documents.ts")
+	if _, err = os.Stat(toReturn); errors.Is(err, os.ErrNotExist) {
+		return toReturn, err
+	}
+	return toReturn, nil
+}
