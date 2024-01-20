@@ -160,7 +160,7 @@ func praseRouteName(candidate string) (string, error) {
 	return RouteTitleKebabCase(candidate), nil
 }
 
-func schemaExportName(routeName string, routeType RouteType) (string, error) {
+func GetSchemaExportName(routeName string, routeType RouteType) (string, error) {
 	nameVar := GetRouteTemplateVariable(routeName)
 	switch routeType {
 	case StaticRoute:

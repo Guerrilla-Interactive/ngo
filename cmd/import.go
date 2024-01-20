@@ -7,23 +7,12 @@ import (
 	"strings"
 )
 
-func AddSchemaImportStatement(path string, name string) error {
-	wd, err := os.Getwd()
+// Import sanity schema to document.ts and export from there
+func AddSchemaImportStatement(schemaExportName, schemaFilename string) error {
+	importString, err := SchemaExportImportString(schemaFilename, schemaExportName)
 	if err != nil {
 		return err
 	}
-	dir, err := getPackageJSONLevelDir(wd)
-	if err != nil {
-		return err
-	}
-	importPath := strings.TrimPrefix(path, dir)
-	// Import leading slash
-	importPath = strings.TrimPrefix(importPath, "/")
-	// Remove ts, tsx extension
-	importPath = strings.TrimSuffix(importPath, ".tsx")
-	importPath = strings.TrimSuffix(importPath, ".ts")
-	importString := fmt.Sprintf(`export { %v } from "%v"`, name, importPath)
-
 	documentSchemasFileName, err := GetSanityDocumentSchemas()
 	if err != nil {
 		return err
@@ -38,6 +27,89 @@ func AddSchemaImportStatement(path string, name string) error {
 		return err
 	}
 	// Append the import string to the document
+	return nil
+}
+
+func SchemaExportImportString(path string, name string) (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	dir, err := getPackageJSONLevelDir(wd)
+	if err != nil {
+		return "", err
+	}
+	importPath := strings.TrimPrefix(path, dir)
+	// Import leading slash
+	importPath = strings.TrimPrefix(importPath, "/")
+	// Remove ts, tsx extension
+	importPath = strings.TrimSuffix(importPath, ".tsx")
+	importPath = strings.TrimSuffix(importPath, ".ts")
+	return fmt.Sprintf(`export { %v } from "%v"`, name, importPath), nil
+}
+
+func SchemaImportString(name string) (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	dir, err := getPackageJSONLevelDir(wd)
+	if err != nil {
+		return "", err
+	}
+	documentSchemasFileName, err := GetSanityDocumentSchemas()
+	if err != nil {
+		return "", err
+	}
+	importPath := strings.TrimPrefix(documentSchemasFileName, dir)
+	// Import leading slash
+	importPath = strings.TrimPrefix(importPath, "/")
+	// Remove ts, tsx extension
+	importPath = strings.TrimSuffix(importPath, ".tsx")
+	importPath = strings.TrimSuffix(importPath, ".ts")
+	importPath = "@/" + importPath
+	return fmt.Sprintf(`import { %v } from "%v"`, name, importPath), nil
+}
+
+// Import sanity schema to document.ts and export from there
+func AddSchemaToDeskStructure(schemaExportName string, routeType RouteType) error {
+	deskCustomizationFile, err := GetSanityDeskCustomozieFileLocation()
+	deskStructureImportMagicString := "MAGIC_STRING_CUSTOM_IMPORT\n"
+	deskStructureItemMagicString := "MAGIC_STRING_LINE_DESK_STRUCTURES\n"
+	if err != nil {
+		return err
+	}
+	var deskStructureItemString string
+	switch routeType {
+	case StaticRoute:
+		deskStructureItemString = fmt.Sprintf("    { type: 'singleton', doc: %v },\n", schemaExportName)
+	case DynamicRoute:
+		deskStructureItemString = fmt.Sprintf("    { type: 'doc', doc: %v },\n", schemaExportName)
+	}
+	if deskStructureItemString == "" {
+		return fmt.Errorf("invalid route %v for adding schema desk structure", routeType)
+	}
+	importString, err := SchemaImportString(schemaExportName)
+	if err != nil {
+		return err
+	}
+	err = AddToFileAfterMagicString(
+		deskCustomizationFile,
+		deskStructureImportMagicString,
+		importString+"\n",
+	)
+	if err != nil {
+		return err
+	}
+	// Add the schema to desk structure
+	err = AddToFileAfterMagicString(
+		deskCustomizationFile,
+		deskStructureItemMagicString,
+		deskStructureItemString,
+	)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
