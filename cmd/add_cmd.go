@@ -233,7 +233,10 @@ func createStaticRoute(at string, name string) {
 	}
 
 	// Append appropriate string to path resolver
-	err = AddToPathResolver(StaticRoute, schemaExportName)
+	// Note there that 'name' is the last part of the route
+	// full name which is the name of the schema.
+	// For example for route /chapai/foobar, the schema name is 'foobar'
+	err = AddToPathResolver(StaticRoute, name)
 	if err != nil {
 		fmt.Println(err)
 	} else {
