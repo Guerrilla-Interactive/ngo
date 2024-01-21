@@ -9,9 +9,9 @@ import type { ZodType } from 'zod'
 
 import { serverEnv } from '@/lib/env/server'
 import { runQuery } from '@/sanity/groqd-client'
-import { {{.CamelCaseComponentName}}SlugQuery {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query"
+import { {{.PascalCaseComponentName}}SlugQuery, {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query"
 import { Preview{{.PascalCaseComponentName}}Slug } from "./{{.KebabCaseComponentName}}.slug-preview"
-import { {{.PascalCaseComponentName}}SlugBody } from "./{{.KebabCaseComponentName}}.slug-component"
+import {{.PascalCaseComponentName}}SlugBody from "./{{.KebabCaseComponentName}}.slug-component"
 
 
 interface PageParams extends Record<string, any> {
@@ -22,14 +22,14 @@ interface PageProps {
 	params: PageParams
 }
 
-const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: Props) => {
+const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: PageProps) => {
 
   const { isEnabled: draftModeEnabled } = draftMode()
   const token = serverEnv.SANITY_API_READ_TOKEN
 
   const data = await runQuery<ZodType<ProductsSlugQuery | null>>(
 		{{.CamelCaseComponentName}}SlugQuery,
-		{ slug: props.params.slug },
+		{ slug: params.slug },
 		draftModeEnabled ? token : undefined
   )
 
@@ -38,7 +38,7 @@ const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: Props) => {
   }
 
   if (draftModeEnabled) {
-	  return <{ Preview{{.PascalCaseComponentName}}Slug initial={data} />
+	  return <Preview{{.PascalCaseComponentName}}Slug initial={data} />
   }
 
   return <{{.PascalCaseComponentName}}SlugBody data={data} />

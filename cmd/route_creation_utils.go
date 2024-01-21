@@ -14,13 +14,9 @@ func AddToPathResolver(routeType RouteType, schemaName string) error {
 	}
 	routeParts := strings.Split(routeName, "/")
 	if routeType == DynamicRoute {
-		fmt.Println("yes dynamic route")
 		// Drop [...slug] or its friends
 		routeNameCopy = strings.Join(routeParts[:len(routeParts)-1], "/")
-		fmt.Println("routname copy lskdjf", routeNameCopy)
 	}
-	fmt.Println("routename copy is", routeNameCopy)
-	fmt.Println("routename copy dup", strings.Join(routeParts[:len(routeParts)-2], "/"))
 	stringToAdd := fmt.Sprintf("  %v: '%v',\n", schemaName, routeNameCopy)
 	pathResolverFile, err := GetSanityPathResolverFileLocation()
 	if err != nil {

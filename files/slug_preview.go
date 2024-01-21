@@ -4,7 +4,7 @@ import "text/template"
 
 const slugPreview = `"use client"
 import { PreviewLoadingErrorHOC } from '@/components/preview/preview-wrapper'
-import { {{.PascalCaseComponentName}}SlugBody } from "./{{.KebabCaseComponentName}}.slug-component"
+import {{.PascalCaseComponentName}}SlugBody from "./{{.KebabCaseComponentName}}.slug-component"
 import { {{.PascalCaseComponentName}}SlugQuery,  {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query"
 
 
@@ -13,7 +13,7 @@ interface PreviewProps {
 	queryParams?: { slug: string }
 }
 
-export function Preview{{.PascalCaseComponentName}}Slug(props: PreviewProps) = ({
+export function Preview{{.PascalCaseComponentName}}Slug(props: PreviewProps){
 	return (
 		<PreviewLoadingErrorHOC
 			initial={props.initial}
