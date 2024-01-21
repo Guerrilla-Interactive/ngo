@@ -13,12 +13,16 @@ export default function {{.PascalCaseComponentName}}IndexBody(props: PageProps) 
   )
 }`
 
-const pageSlugBody = `export function {{.PascalCaseComponentName}}SlugBody() {
-	return (
-		<>Modify this component by the name {{.PascalCaseComponentName}}</>
-	)}`
+// Component for slug page.tsx
+const (
+	pageSlugBody                 = ``
+	pageSlugBodyCatchAll         = ``
+	pageSlugBodyCatchAllOptional = ``
+)
 
 var (
-	PageIndexBody = template.Must(template.New("pageIndexBody").Parse(pageIndexBody))
-	PageSlugBody  = template.Must(template.New("pageSlugBody").Parse(pageSlugBody))
+	PageIndexBody                = template.Must(template.New("pageIndexBody").Parse(pageIndexBody))
+	PageSlugBody                 = template.Must(template.New("pageSlugBody").Parse(pageSlugBody))
+	PageSlugBodyCatchAll         = template.Must(template.New("pageSlugBodyCatchAll").Parse(pageSlugBodyCatchAll))
+	PageSlugBodyCatchAllOptional = template.Must(template.New("pageSlugBodyCatchAllOptional").Parse(pageSlugBodyCatchAllOptional))
 )

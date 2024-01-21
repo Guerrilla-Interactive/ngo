@@ -2,13 +2,15 @@ package files
 
 import "text/template"
 
-const slug_query = `import type { InferType } from "groqd"
-import { q } from "groqd"
+const slugQuery = ``
 
-// TODO ADD YOUR QUERY
-export const {{.CamelCaseComponentName}}SlugQuery = q("*")
+const (
+	slugQueryCatchAll         = ``
+	slugQueryCatchAllOptional = ``
+)
 
-export type {{.PascalCaseComponentName}}SlugQueryType = NonNullable<InferType<typeof {{.CamelCaseComponentName}}SlugQuery>>
-`
-
-var SlugQuery = template.Must(template.New("slug_query").Parse(slug_query))
+var (
+	SlugQuery                 = template.Must(template.New("slugQuery").Parse(slugQuery))
+	SlugQueryCatchAll         = template.Must(template.New("slugQueryCatchAll").Parse(slugQueryCatchAll))
+	SlugQueryCatchAllOptional = template.Must(template.New("slugQueryCatchAllOptional").Parse(slugQueryCatchAllOptional))
+)

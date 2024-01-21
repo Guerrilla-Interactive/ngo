@@ -2,6 +2,7 @@ package files
 
 import "text/template"
 
+// page.tsx for dynamic page
 const slugPage = `import { draftMode } from "next/headers"
 import { notFound } from "next/navigation"
 
@@ -47,9 +48,15 @@ const {{.PascalCaseComponentName}}Page = async ({ params }: Props) => {
 export default {{.PascalCaseComponentName}}Page
 `
 
-const slugPageCatchAll = ``
+const (
+	// page.tsx for catch all dynamic page
+	slugPageCatchAll = ``
+	// page.tsx for optional catch all dynamic page
+	slugPageCatchAllOptional = ``
+)
 
 var (
-	SlugPage          = template.Must(template.New("slugPage").Parse(slugPage))
-	SlugPageCatchAlll = template.Must(template.New("slugPageCatchAll").Parse(slugPageCatchAll))
+	SlugPage                 = template.Must(template.New("slugPage").Parse(slugPage))
+	SlugPageCatchAll         = template.Must(template.New("slugPageCatchAll").Parse(slugPageCatchAll))
+	SlugPageCatchAllOptional = template.Must(template.New("slugPageCatchAllOptional").Parse(slugPageCatchAllOptional))
 )

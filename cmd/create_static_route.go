@@ -39,40 +39,16 @@ func createStaticRoute(at string, name string, rawRouteName string) {
 	pageBodyComponentFilename := filepath.Join(pageAndPreviewFolder, fmt.Sprintf("%v.index-component.tsx", name))
 	CreateFileContents(pageBodyComponentFilename, files.PageIndexBody, name)
 
-	CreatedMsg([]string{schemaFilename, queryFilename, pageFilename, previewFilename})
+	CreatedMsg([]string{
+		schemaFilename,
+		queryFilename,
+		pageFilename,
+		previewFilename,
+		pageBodyComponentFilename,
+	})
 	fmt.Println("")
 
-	// Import the schema into documents.ts
-	schemaExportName, err := GetSchemaExportName(name, StaticRoute)
-	if err != nil {
-		errExit(err)
-	}
-	err = AddSchemaImportStatement(schemaExportName, schemaFilename)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		schemaDocs, _ := GetSanityDocumentSchemas()
-		fmt.Println("Added schema to", schemaDocs)
-	}
-
-	// Add the schema into desk structure
-	err = AddSchemaToDeskStructure(schemaExportName, StaticRoute)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		deskCustomizationFile, _ := GetSanityDeskCustomozieFileLocation()
-		fmt.Println("Added schema to desk structure file", deskCustomizationFile)
-	}
-
-	// Append appropriate string to path resolver
-	// Note there that 'name' is the last part of the route
-	// full name which is the name of the schema.
-	// For example for route /chapai/foobar, the schema name is 'foobar'
-	err = AddToPathResolver(StaticRoute, name)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		pathResolverFile, _ := GetSanityPathResolverFileLocation()
-		fmt.Println("Added schema to path resolver", pathResolverFile)
-	}
+	// Automatically add schema imports, etc. to existing application
+	// Note here that name refers to the last part of the route name
+	FitNewRouteIntoExistingApp(name, schemaFilename, StaticRoute)
 }

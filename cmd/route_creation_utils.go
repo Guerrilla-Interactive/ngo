@@ -33,3 +33,42 @@ func CreatedMsg(files []string) {
 		fmt.Println(file)
 	}
 }
+
+// Create import statements to import the schema,
+// Create appropriate desk structure,
+// Update sanity path resolver
+func FitNewRouteIntoExistingApp(name, schemaFilename string, kind RouteType) {
+	// Import the schema into documents.ts
+	schemaExportName, err := GetSchemaExportName(name, kind)
+	if err != nil {
+		errExit(err)
+	}
+	err = AddSchemaImportStatement(schemaExportName, schemaFilename)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		schemaDocs, _ := GetSanityDocumentSchemas()
+		fmt.Println("Added schema to", schemaDocs)
+	}
+
+	// Add the schema into desk structure
+	err = AddSchemaToDeskStructure(schemaExportName, kind)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		deskCustomizationFile, _ := GetSanityDeskCustomozieFileLocation()
+		fmt.Println("Added schema to desk structure file", deskCustomizationFile)
+	}
+
+	// Append appropriate string to path resolver
+	// Note there that 'name' is the last part of the route
+	// full name which is the name of the schema.
+	// For example for route /chapai/foobar, the schema name is 'foobar'
+	err = AddToPathResolver(StaticRoute, name)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		pathResolverFile, _ := GetSanityPathResolverFileLocation()
+		fmt.Println("Added schema to path resolver", pathResolverFile)
+	}
+}

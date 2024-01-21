@@ -2,6 +2,7 @@ package files
 
 import "text/template"
 
+// page.tsx for index page
 const page = `import { draftMode } from 'next/headers'
 import { notFound } from "next/navigation"
 
