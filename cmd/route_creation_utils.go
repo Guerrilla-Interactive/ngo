@@ -8,16 +8,19 @@ import (
 func AddToPathResolver(routeType RouteType, schemaName string) error {
 	magicStringPathResolver := "MAGIC_STRING_SCHEMA_TYPE_TO_PATH_PREFIX\n"
 	// Copy the route name from the routeName global variable
-	fmt.Println("routename is", routeName)
 	routeNameCopy := routeName
 	if routeType != DynamicRoute && routeType != StaticRoute {
 		return fmt.Errorf("route %v not implemented", routeType)
 	}
 	routeParts := strings.Split(routeName, "/")
 	if routeType == DynamicRoute {
+		fmt.Println("yes dynamic route")
 		// Drop [...slug] or its friends
 		routeNameCopy = strings.Join(routeParts[:len(routeParts)-1], "/")
+		fmt.Println("routname copy lskdjf", routeNameCopy)
 	}
+	fmt.Println("routename copy is", routeNameCopy)
+	fmt.Println("routename copy dup", strings.Join(routeParts[:len(routeParts)-2], "/"))
 	stringToAdd := fmt.Sprintf("  %v: '%v',\n", schemaName, routeNameCopy)
 	pathResolverFile, err := GetSanityPathResolverFileLocation()
 	if err != nil {
@@ -64,7 +67,7 @@ func FitNewRouteIntoExistingApp(name, schemaFilename string, kind RouteType) {
 	// Note there that 'name' is the last part of the route
 	// full name which is the name of the schema.
 	// For example for route /chapai/foobar, the schema name is 'foobar'
-	err = AddToPathResolver(StaticRoute, name)
+	err = AddToPathResolver(kind, name)
 	if err != nil {
 		fmt.Println(err)
 	} else {

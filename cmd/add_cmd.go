@@ -149,7 +149,7 @@ func createRoute(r RouteType, name string) {
 	// To do that we first find the last parent of the route that doesn't exist
 	switch r {
 	case DynamicRoute:
-		dynameRouteName := routeParts[len(routeParts)-2]
+		dynamicRouteName := routeParts[len(routeParts)-2]
 		dynamicRouteKind, err := GetDynamicRouteKindType(routeParts[len(routeParts)-1])
 		if err != nil {
 			errExit(err)
@@ -158,7 +158,7 @@ func createRoute(r RouteType, name string) {
 		// Note that we don't extract this logic for both Static and Dynamic route as
 		// fine-graining allows us to create route only after route kind specific error-checking.
 		CreatePathAndExitOnFail(routeLocation)
-		createDynamicRoute(routeLocation, dynameRouteName, dynamicRouteKind, routeName)
+		createDynamicRoute(routeLocation, dynamicRouteName, dynamicRouteKind, routeName)
 	case StaticRoute:
 		staticRouteName := routeParts[len(routeParts)-1]
 		if staticRouteName == "" {
