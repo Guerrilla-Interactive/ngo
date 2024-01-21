@@ -6,8 +6,8 @@ import "text/template"
 const slugPageCatchAllOptional = `import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
 
-import { serverEnv } from '@/lib/env/server'
-import { runQuery } from '@/sanity/groqd-client'
+import { runDraftQuery, runQuery } from '@/sanity/groqd-client'
+
 import { {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query"
 import { Preview{{.PascalCaseComponentName}}Slug } from "./{{.KebabCaseComponentName}}.slug-preview"
 import {{.PascalCaseComponentName}}SlugBody from "./{{.KebabCaseComponentName}}.slug-component"
@@ -24,12 +24,11 @@ interface PageProps {
 const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: PageProps) => {
 
   const { isEnabled: draftModeEnabled } = draftMode()
-  const token = serverEnv.SANITY_API_READ_TOKEN
+  const fetchClient = draftModeEnabled ? runDraftQuery : runQuery
 
-  const data = await runQuery(
+  const data = await fetchClient(
 		{{.CamelCaseComponentName}}SlugQuery,
-		{ slug: params.slug },
-		draftModeEnabled ? token : undefined
+		{ slug: params.slug }
   )
 
   if (!data) {

@@ -6,8 +6,7 @@ import "text/template"
 const page = `import { draftMode } from 'next/headers'
 import { notFound } from "next/navigation"
 
-import { serverEnv } from '@/lib/env/server'
-import { runQuery } from '@/sanity/groqd-client'
+import { runDraftQuery, runQuery } from '@/sanity/groqd-client'
 
 import { {{.CamelCaseComponentName}}IndexQuery } from '../({{.KebabCaseComponentName}}-index-server)/{{.KebabCaseComponentName}}.index-query'
 import {{.PascalCaseComponentName}}IndexBody from './{{.KebabCaseComponentName}}.index-component'
@@ -15,11 +14,10 @@ import { {{.PascalCaseComponentName}}Preview} from './{{.KebabCaseComponentName}
 
 const {{.PascalCaseComponentName}}IndexRoute = async () => {
   const { isEnabled: draftModeEnabled } = draftMode()
-  const token = serverEnv.SANITY_API_READ_TOKEN
-  const data = await runQuery(
+  const fetchClient = draftModeEnabled ? runDraftQuery : runQuery
+  const data = await fetchClient(
     {{.CamelCaseComponentName}}IndexQuery,
     {},
-    draftModeEnabled ? token : undefined
   )
 
   if (!data) {
