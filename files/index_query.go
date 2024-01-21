@@ -14,6 +14,7 @@ export const {{.CamelCaseComponentName}}IndexQuery = q("*")
         ...basePageQuery,
     })
     .slice(0)
+    .nullable()
 
 export type {{.PascalCaseComponentName}}IndexQuery = NonNullable<InferType<typeof {{.CamelCaseComponentName}}IndexQuery>>
 `

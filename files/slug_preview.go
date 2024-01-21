@@ -3,42 +3,31 @@ package files
 import "text/template"
 
 const slugPreview = `"use client"
+import { PreviewLoadingErrorHOC } from '@/components/preview/preview-wrapper'
+import { {{.PascalCaseComponentName}}SlugBody } from "./{{.KebabCaseComponentName}}.slug-component"
+import { {{.PascalCaseComponentName}}SlugQuery,  {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query"
 
-import { PreviewLoadingErrorHOC } from "@/src/components/sanity/preview-loading-error-hoc"
 
-import type { {{.PascalCaseComponentName}}SlugQueryType } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query";
-import { {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query"
-import { {{.PascalCaseComponentName}}SlugBody } from "./{{.KebabCaseComponentName}}.body"
+interface PreviewProps {
+	initial: ProductsSlugQuery
+	queryParams?: { slug: string }
+}
 
-export const {{.PascalCaseComponentName}}SlugPreview = ({
-	initial,
-	queryParams,
-}: {
-	initial: {{.PascalCaseComponentName}}SlugQueryType
-	queryParams: { slug: string }
-}) => {
-
+export function Preview{{.PascalCaseComponentName}}Slug(props: PreviewProps) = ({
 	return (
 		<PreviewLoadingErrorHOC
-			initial={initial}
-			query={ {{.CamelCaseComponentName}}SlugQuery.query} 
-			queryParams={queryParams}
-			successFn={(data) => {
-				// TODO
-				return (
-				// TODO
-				<{{.PascalCaseComponentName}}PageBody PASS YOUR CUSTOM PROPS HERE />
-				)
-			}
-			}
-		/>
+			initial={props.initial}
+			query={ {{.CamelCaseComponentName}}SlugQuery.query}
+			successFn={(data) =>
+				<{{.PascalCaseComponentName}}SlugBody data={data} />
+			} />
 	)
-}
-`
+}`
 
 const (
-	slugPreviewCatchAll         = `"use client"`
-	slugPreviewCatchAllOptional = `"use client"`
+	// Dynamic routes catch all and catch all optional are all the same
+	slugPreviewCatchAll         = slugPreview
+	slugPreviewCatchAllOptional = slugPreview
 )
 
 var (

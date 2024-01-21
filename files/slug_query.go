@@ -9,12 +9,14 @@ import { basePageQuery } from "@/sanity/shame-queries/base-page.query"
 
 export const {{.CamelCaseComponentName}}SlugQuery = q("*")
     .filterByType("{{.CamelCaseComponentName}}")
+    .filter("slug.current == $slug")
     .grab({
         title: q.string().optional(),
-	slug: ["slug.current", q.string().optional()],
+        slug: ["slug.current", q.string().optional()],
         ...basePageQuery,
     })
     .slice(0)
+    .nullable()
 
 export type {{.PascalCaseComponentName}}SlugQuery = NonNullable<InferType<typeof {{.CamelCaseComponentName}}SlugQuery>>
 `

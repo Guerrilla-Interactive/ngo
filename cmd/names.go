@@ -25,9 +25,9 @@ var (
 
 	// Note the general versions are different than the previous in that general don't enfore
 	// pattern to match from beginning to string to the end
-	GeneralDynamicRouteNameRegex                 = regexp.MustCompile(`\[slug\]`)
-	GeneralDynamicRouteCatchAllNameRegex         = regexp.MustCompile(`\[\.\.\.slug\]`)
-	GeneralDynamicRouteOptionalCatchAllNameRegex = regexp.MustCompile(`\[\[\.\.\.slug\]\]`)
+	GeneralDynamicRouteNameRegex                 = regexp.MustCompile(`\[[[:alnum:]]+\]`)
+	GeneralDynamicRouteCatchAllNameRegex         = regexp.MustCompile(`\[\.\.\.[[:alnum:]]+\]`)
+	GeneralDynamicRouteOptionalCatchAllNameRegex = regexp.MustCompile(`\[\[\.\.\.[[:alnum:]]+\]\]`)
 )
 
 // Returns the kebabcase version of the title string

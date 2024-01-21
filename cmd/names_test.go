@@ -31,7 +31,7 @@ func TestIsValidDynamicRouteName(t *testing.T) {
 		expected bool
 	}
 	cases := []TestCase{
-		{"[foo]", true},
+		{"[foo]", false}, // needs 'slug' literally
 		{"bar", false},
 		{"/suman", false},
 		{"[..slug]", false},

@@ -2,8 +2,8 @@ package files
 
 import "text/template"
 
-// page.tsx for dynamic page
-const slugPage = `import { draftMode } from 'next/headers'
+// page.tsx for dynamic catch all page
+const slugPageCatchAll = `import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
 import type { ZodType } from 'zod'
 
@@ -47,4 +47,4 @@ const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: Props) => {
 export default {{.PascalCaseComponentName}}SlugRoute
 `
 
-var SlugPage = template.Must(template.New("slugPage").Parse(slugPage))
+var SlugPageCatchAll = template.Must(template.New("slugPageCatchAll").Parse(slugPageCatchAll))

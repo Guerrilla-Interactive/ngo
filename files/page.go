@@ -19,7 +19,7 @@ import { {{.PascalCaseComponentName}}Preview} from './{{.KebabCaseComponentName}
 const {{.PascalCaseComponentName}}IndexRoute = async () => {
   const { isEnabled: draftModeEnabled } = draftMode()
   const token = serverEnv.SANITY_API_READ_TOKEN
-  const data = await runQuery<ZodType<{{.PascalCaseComponentName}}IndexQuery>>(
+  const data = await runQuery<ZodType<{{.PascalCaseComponentName}}IndexQuery | null>>(
     {{.CamelCaseComponentName}}IndexQuery,
     {},
     draftModeEnabled ? token : undefined

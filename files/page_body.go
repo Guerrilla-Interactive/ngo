@@ -2,26 +2,24 @@ package files
 
 import "text/template"
 
-const pageIndexBody = `import type { {{.PascalCaseComponentName}}IndexQuery } from "../({{.KebabCaseComponentName}}-index-server)/{{.KebabCaseComponentName}}.index-query"
+// Component for slug page.tsx
+const pageSlugBody = `import { {{.PascalCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query"
 
 interface PageProps {
-  data: {{.PascalCaseComponentName}}IndexQuery
+	data: {{.PascalCaseComponentName}}SlugQuery
 }
-export default function {{.PascalCaseComponentName}}IndexBody(props: PageProps) {
-  return (
-    <div>{{.PascalCaseComponentName}}: {props.data.title}</div>
-  )
+export default function {{.PascalCaseComponentName}}SlugBody(props: PageProps) {
+	return (
+		<div>Title: {props.data.title}</div>
+	)
 }`
 
-// Component for slug page.tsx
 const (
-	pageSlugBody                 = ``
-	pageSlugBodyCatchAll         = ``
-	pageSlugBodyCatchAllOptional = ``
+	pageSlugBodyCatchAll         = pageSlugBody
+	pageSlugBodyCatchAllOptional = pageSlugBody
 )
 
 var (
-	PageIndexBody                = template.Must(template.New("pageIndexBody").Parse(pageIndexBody))
 	PageSlugBody                 = template.Must(template.New("pageSlugBody").Parse(pageSlugBody))
 	PageSlugBodyCatchAll         = template.Must(template.New("pageSlugBodyCatchAll").Parse(pageSlugBodyCatchAll))
 	PageSlugBodyCatchAllOptional = template.Must(template.New("pageSlugBodyCatchAllOptional").Parse(pageSlugBodyCatchAllOptional))
