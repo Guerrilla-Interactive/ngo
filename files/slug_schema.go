@@ -30,9 +30,12 @@ export const {{.CamelCaseComponentName}}SlugSchema = defineType({
     defineField({
       name: 'slug',
       title: '{{.PascalCaseComponentName}} Slug',
-      type: 'slug',
+      type: 'slug', 
       validation: (Rule) => Rule.required(),
       group: SanityFieldGroups.basic,
+	  options: {
+		source: 'title',
+	  }
     }),
     ...metaFields({}),
   ],
