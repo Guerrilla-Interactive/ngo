@@ -7,7 +7,7 @@ import { q } from "groqd"
 
 import { basePageQuery } from "@/sanity/shame-queries/base-page.query"
 
-export const {{.CamelCaseComponentName}}IndexQuery = q("*")
+export const {{.CamelCaseComponentName}}SlugQuery = q("*")
     .filterByType("{{.CamelCaseComponentName}}")
     .grab({
         title: q.string().optional(),
@@ -16,7 +16,7 @@ export const {{.CamelCaseComponentName}}IndexQuery = q("*")
     })
     .slice(0)
 
-export type {{.PascalCaseComponentName}}IndexQuery = NonNullable<InferType<typeof {{.CamelCaseComponentName}}IndexQuery>>
+export type {{.PascalCaseComponentName}}SlugQuery = NonNullable<InferType<typeof {{.CamelCaseComponentName}}SlugQuery>>
 `
 
 // Note that the query template for normal dynamic route, catch all dynamic route and
