@@ -19,15 +19,15 @@ var (
 	FillerRouteNameRegex = regexp.MustCompile(`^\([[[:alnum:]]|-]+\)$`)
 	StaticRouteNameRegex = regexp.MustCompile(`^[[[:alpha:]]|-]+$`)
 
-	DynamicRouteNameRegex                 = regexp.MustCompile(`^\[[[:alnum:]]+\]$`)
-	DynamicRouteCatchAllNameRegex         = regexp.MustCompile(`^\[\.\.\.[[:alnum:]]+\]$`)
-	DynamicRouteOptionalCatchAllNameRegex = regexp.MustCompile(`^\[\[\.\.\.[[:alnum:]]+\]\]$`)
+	DynamicRouteNameRegex                 = regexp.MustCompile(`^\[slug\]$`)
+	DynamicRouteCatchAllNameRegex         = regexp.MustCompile(`^\[\.\.\.slug\]$`)
+	DynamicRouteOptionalCatchAllNameRegex = regexp.MustCompile(`^\[\[\.\.\.slug\]\]$`)
 
 	// Note the general versions are different than the previous in that general don't enfore
 	// pattern to match from beginning to string to the end
-	GeneralDynamicRouteNameRegex                 = regexp.MustCompile(`\[[[:alnum:]]+\]`)
-	GeneralDynamicRouteCatchAllNameRegex         = regexp.MustCompile(`\[\.\.\.[[:alnum:]]+\]`)
-	GeneralDynamicRouteOptionalCatchAllNameRegex = regexp.MustCompile(`\[\[\.\.\.[[:alnum:]]+\]\]`)
+	GeneralDynamicRouteNameRegex                 = regexp.MustCompile(`\[slug\]`)
+	GeneralDynamicRouteCatchAllNameRegex         = regexp.MustCompile(`\[\.\.\.slug\]`)
+	GeneralDynamicRouteOptionalCatchAllNameRegex = regexp.MustCompile(`\[\[\.\.\.slug\]\]`)
 )
 
 // Returns the kebabcase version of the title string
@@ -102,7 +102,7 @@ func AssertRouteNameValid(kind RouteType, name string) error {
 	case DynamicRoute:
 		// Dynamic Route [slug]
 		if !IsValidDynamicRouteName(lastPart) {
-			return errors.New("dynamic route must end with [slug] or [...slug] or [[...slug]] where `slug` can be replaced with word of your choice")
+			return errors.New("dynamic route must end with [slug] or [...slug] or [[...slug]]")
 		}
 	case FillerRoute:
 		if !IsValidFillerRouteName(lastPart) {

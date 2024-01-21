@@ -97,9 +97,8 @@ func createRoute(r RouteType, name string) {
 		return err == nil
 	}
 	if foundRoute, err := RouteExists(name, routes, appDir); err == nil {
-		errExit(fmt.Sprintf("%v - route - %v already exists",
+		errExit(fmt.Sprintf("%v already exists",
 			RouteFromPagePath(foundRoute.pathToPage, appDir),
-			name,
 		))
 	}
 	// Remove the leading / is name
