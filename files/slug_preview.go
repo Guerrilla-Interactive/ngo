@@ -9,7 +9,7 @@ import { {{.PascalCaseComponentName}}SlugQuery,  {{.CamelCaseComponentName}}Slug
 
 
 interface PreviewProps {
-	initial: ProductsSlugQuery
+	initial: {{.PascalCaseComponentName}}SlugQuery
 	queryParams?: { slug: string }
 }
 
