@@ -45,7 +45,7 @@ func SchemaExportImportString(path string, name string) (string, error) {
 	// Remove ts, tsx extension
 	importPath = strings.TrimSuffix(importPath, ".tsx")
 	importPath = strings.TrimSuffix(importPath, ".ts")
-	return fmt.Sprintf("export { %v } from '%v'\n", name, importPath), nil
+	return fmt.Sprintf("\nexport { %v } from '%v'", name, importPath), nil
 }
 
 func SchemaImportString(name string) (string, error) {
