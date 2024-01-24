@@ -22,8 +22,7 @@ func AddToPathResolver(routeType RouteType, schemaName string) error {
 	if err != nil {
 		return err
 	}
-	AddToFileAfterMagicString(pathResolverFile, magicStringPathResolver, stringToAdd)
-	return nil
+	return AddToFileAfterMagicString(pathResolverFile, magicStringPathResolver, stringToAdd)
 }
 
 func CreatedMsg(files []string) {

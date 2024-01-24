@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log"
 	"path/filepath"
 	"strings"
 
@@ -71,8 +72,14 @@ func init() {
 	rootCmd.AddCommand(addCmd)
 	addCmd.Flags().StringVar(&routeType, "type", "", "'dyanamic' or 'static'")
 	addCmd.Flags().StringVar(&routeName, "name", "", "name of the route")
-	addCmd.MarkFlagRequired("type")
-	addCmd.MarkFlagRequired("name")
+	err := addCmd.MarkFlagRequired("type")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = addCmd.MarkFlagRequired("name")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // Create a route of given type and name

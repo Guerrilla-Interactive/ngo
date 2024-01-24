@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io/fs"
+	"log"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -52,7 +53,7 @@ func GetRoutes(appDir string) []Route {
 		return IsValidTerminalPageRouteName(lastPart)
 	}
 	// Recursively find routes in the appDir
-	filepath.WalkDir(appDir, func(path string, _ fs.DirEntry, err error) error {
+	err := filepath.WalkDir(appDir, func(path string, _ fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -65,5 +66,8 @@ func GetRoutes(appDir string) []Route {
 		}
 		return nil
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	return routes
 }
