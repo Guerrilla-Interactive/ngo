@@ -1,11 +1,5 @@
 package main
 
-import (
-	"encoding/json"
-	"log"
-	"os"
-)
-
 type RouteType int
 
 const (
@@ -31,7 +25,7 @@ type Route struct {
 }
 
 type Packages struct {
-	names []string
+	// names []string
 }
 
 type Sitemap struct {
@@ -41,11 +35,11 @@ type Sitemap struct {
 	Packages Packages
 }
 
-func getSitemapStdIn() Sitemap {
-	// Read from standard input until EOF is found
-	var sitemap Sitemap
-	if err := json.NewDecoder(os.Stdin).Decode(&sitemap); err != nil {
-		log.Fatal(err)
-	}
-	return sitemap
-}
+// func getSitemapStdIn() Sitemap {
+// 	// Read from standard input until EOF is found
+// 	var sitemap Sitemap
+// 	if err := json.NewDecoder(os.Stdin).Decode(&sitemap); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	return sitemap
+// }
