@@ -13,8 +13,8 @@ import { Preview{{.PascalCaseComponentName}}Slug } from "./{{.KebabCaseComponent
 import {{.PascalCaseComponentName}}SlugBody from "./{{.KebabCaseComponentName}}.slug-component"
 
 
-interface PageParams extends Record<string, any> {
-	slug: string
+interface PageParams extends Record<string, string | Array<string>> {
+	slug: Array<string>
 }
 
 interface PageProps {
@@ -28,7 +28,7 @@ const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: PageProps) => {
 
   const data = await fetchClient(
 		{{.CamelCaseComponentName}}SlugQuery,
-		{ slug: params.slug }
+		{ slug: params.slug[0] }
   )
 
   if (!data) {
@@ -36,7 +36,7 @@ const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: PageProps) => {
   }
 
   if (draftModeEnabled) {
-	  return <Preview{{.PascalCaseComponentName}}Slug initial={data} />
+	  return <Preview{{.PascalCaseComponentName}}Slug initial={data} queryParams={params} slug={params.slug[0]!} />
   }
 
   return <{{.PascalCaseComponentName}}SlugBody data={data} />

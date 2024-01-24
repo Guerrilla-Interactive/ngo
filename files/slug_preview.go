@@ -10,7 +10,8 @@ import { {{.PascalCaseComponentName}}SlugQuery,  {{.CamelCaseComponentName}}Slug
 
 interface PreviewProps {
 	initial: {{.PascalCaseComponentName}}SlugQuery
-	queryParams?: { slug: string }
+	queryParams?: Record<string, string|Array<string>>
+	slug?: string
 }
 
 export function Preview{{.PascalCaseComponentName}}Slug(props: PreviewProps){
@@ -18,6 +19,7 @@ export function Preview{{.PascalCaseComponentName}}Slug(props: PreviewProps){
 		<PreviewLoadingErrorHOC
 			initial={props.initial}
 			query={ {{.CamelCaseComponentName}}SlugQuery.query}
+			slug={props.slug}
 			successFn={(data) =>
 				<{{.PascalCaseComponentName}}SlugBody data={data} />
 			} />
