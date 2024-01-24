@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -48,4 +49,61 @@ func RouteTypeByPageTSXPath(path string) (RouteType, error) {
 		}
 	}
 	return StaticRoute, nil
+}
+
+// Get to route root traversing walking up stepping on filler routes
+// Preconditions:
+// 1. pagePath is a valid page path
+func GetRootRouteByWalkingFillers(pagePath string) string {
+	routeParts := strings.Split(pagePath, "/")
+	i := len(routeParts) - 2 // Start from the folder path (not the page.tsx level)
+	for ; i > 0; i-- {
+		if !IsValidFillerRouteName(routeParts[i]) {
+			break
+		}
+	}
+	toReturn := strings.Join(routeParts[:i+1], "/")
+	if toReturn == "" {
+		toReturn = "/"
+	}
+	return toReturn
+}
+
+// Replace the dynamic route name part of the route name with
+// some keyword so that comparision works.
+func DynamicRoutePartUnifiedRouteName(name string) string {
+	name = GeneralDynamicRouteNameRegex.ReplaceAllString(name, "[slug]")
+	name = GeneralDynamicRouteCatchAllNameRegex.ReplaceAllString(name, "[...slug]")
+	name = GeneralDynamicRouteOptionalCatchAllNameRegex.ReplaceAllString(name, "[[...slug]]")
+	return name
+}
+
+func RouteExists(name string, routes []Route, appDir string) (Route, error) {
+	var toReturn Route
+	// Note here generalized means replacing the "slug" part of [slug] and friends in dynamic
+	// route with something universal as [slug] and [foobar] are equivalent for nextJS
+	nameGeneralized := DynamicRoutePartUnifiedRouteName(name)
+	for _, r := range routes {
+		rGeneralized := DynamicRoutePartUnifiedRouteName(RouteFromPagePath(r.pathToPage, appDir))
+		// Exact match
+		if nameGeneralized == rGeneralized {
+			return r, nil
+		}
+		// TODO
+		// Dynamic route but not exact match
+		// Meaning, match between CatchAll, OptionalCatchAll, etc.
+	}
+	return toReturn, fmt.Errorf("route of name %v not found", name)
+}
+
+func GetDynamicRouteKindType(name string) (DynamicRouteType, error) {
+	if DynamicRouteNameRegex.Match([]byte(name)) {
+		return DynamicRoutePrimary, nil
+	} else if DynamicRouteCatchAllNameRegex.Match([]byte(name)) {
+		return DynamicRouteCatchAll, nil
+	} else if DynamicRouteOptionalCatchAllNameRegex.Match([]byte(name)) {
+		return DynamicRouteOptionalCatchAll, nil
+	}
+	var bogus DynamicRouteType
+	return bogus, fmt.Errorf("name %q doesn't match dynamic route naming convention", name)
 }

@@ -2,19 +2,19 @@ package files
 
 import "text/template"
 
-// page.tsx for dynamic page
-const slugPage = `import { draftMode } from 'next/headers'
+// page.tsx for dynamic catch all page
+const slugPageCatchAll = `import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
 
 import { runDraftQuery, runQuery } from '@/sanity/groqd-client'
 
 import { {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query"
 import { Preview{{.PascalCaseComponentName}}Slug } from "./{{.KebabCaseComponentName}}.slug-preview"
-import {{.PascalCaseComponentName}}SlugBody  from "./{{.KebabCaseComponentName}}.slug-component"
+import {{.PascalCaseComponentName}}SlugBody from "./{{.KebabCaseComponentName}}.slug-component"
 
 
-interface PageParams extends Record<string, string> {
-	slug: string
+interface PageParams extends Record<string, string | Array<string>> {
+	slug: Array<string>
 }
 
 interface PageProps {
@@ -28,7 +28,7 @@ const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: PageProps) => {
 
   const data = await fetchClient(
 		{{.CamelCaseComponentName}}SlugQuery,
-		{ slug: params.slug }
+		{ slug: params.slug[0] }
   )
 
   if (!data) {
@@ -36,7 +36,7 @@ const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: PageProps) => {
   }
 
   if (draftModeEnabled) {
-	  return <Preview{{.PascalCaseComponentName}}Slug initial={data} queryParams={params} slug={params.slug} />
+	  return <Preview{{.PascalCaseComponentName}}Slug initial={data} queryParams={params} slug={params.slug[0]!} />
   }
 
   return <{{.PascalCaseComponentName}}SlugBody data={data} />
@@ -45,4 +45,4 @@ const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: PageProps) => {
 export default {{.PascalCaseComponentName}}SlugRoute
 `
 
-var SlugPage = template.Must(template.New("slugPage").Parse(slugPage))
+var SlugPageCatchAll = template.Must(template.New("slugPageCatchAll").Parse(slugPageCatchAll))

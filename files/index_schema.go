@@ -2,14 +2,13 @@ package files
 
 import "text/template"
 
-const (
-	slugSchema = `import { defineType, defineField } from "sanity";
+const indexSchema = `import { defineType, defineField } from "sanity";
 
 import type { CustomDocumentDefinition } from '@/sanity/api.desk-structure.ts'
 import { SanityFieldGroups, defaultGroups } from '@/sanity/schema-utils/default-groups.util'
 import { metaFields } from '@/sanity/schema-utils/generator-field/meta-fields.field'
 
-export const {{.CamelCaseComponentName}}SlugSchema = defineType({
+export const {{.CamelCaseComponentName}}IndexSchema = defineType({
   type: "document",
   name: "{{.CamelCaseComponentName}}",
   title: "{{.PascalCaseComponentName}}",
@@ -17,7 +16,7 @@ export const {{.CamelCaseComponentName}}SlugSchema = defineType({
   options: {
     previewable: true,
     linkable: true,
-    isSingleton: false,
+    isSingleton: true,
   },
   fields: [
     defineField({
@@ -26,16 +25,6 @@ export const {{.CamelCaseComponentName}}SlugSchema = defineType({
       type: 'string',
       validation: (Rule) => Rule.required(),
       group: SanityFieldGroups.basic,
-    }),
-    defineField({
-      name: 'slug',
-      title: '{{.PascalCaseComponentName}} Slug',
-      type: 'slug', 
-      validation: (Rule) => Rule.required(),
-      group: SanityFieldGroups.basic,
-	  options: {
-		source: 'title',
-	  }
     }),
     ...metaFields({}),
   ],
@@ -51,6 +40,5 @@ export const {{.CamelCaseComponentName}}SlugSchema = defineType({
   },
 }) as CustomDocumentDefinition
 `
-)
 
-var SlugSchema = template.Must(template.New("slugSchema").Parse(slugSchema))
+var IndexSchema = template.Must(template.New("indexSchema").Parse(indexSchema))

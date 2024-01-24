@@ -69,3 +69,61 @@ func TestRouteTypeByPageTSXPath(t *testing.T) {
 		}
 	}
 }
+
+func TestDynamicRoutePartUnifiedRouteName(t *testing.T) {
+	type TestCase struct {
+		name     string
+		expected string
+	}
+	cases := []TestCase{
+		{"/", "/"},
+		{"/foobar", "/foobar"},
+		{"/foobar/suman", "/foobar/suman"},
+		{"/foobar/[slug]/suman", "/foobar/[slug]/suman"},
+		{"/foobar/[...foo]/suman", "/foobar/[...slug]/suman"},
+		{"/foobar/[[...foo]]/suman", "/foobar/[[...slug]]/suman"},
+	}
+	for _, testcase := range cases {
+		got := DynamicRoutePartUnifiedRouteName(testcase.name)
+		if testcase.expected != got {
+			t.Errorf("DynamicRoutePartUnifiedRouteName(%q) returned %v wanted %v", testcase.name, got, testcase.expected)
+		}
+	}
+}
+
+func TestGetRootRouteByWalkingFillers(t *testing.T) {
+	type TestCase struct {
+		name     string
+		expected string
+	}
+	cases := []TestCase{
+		{"/page.tsx", "/"},
+		{"/app/src/(index)/page.tsx", "/app/src"},
+		{"/app/src/(index)/(main-destination)/page.tsx", "/app/src"},
+		{"/app/src/pieces/(index)/page.tsx", "/app/src/pieces"},
+	}
+	for _, testcase := range cases {
+		got := GetRootRouteByWalkingFillers(testcase.name)
+		if testcase.expected != got {
+			t.Errorf("GetRootRouteByWalkingFillers(%q) returned %v wanted %v", testcase.name, got, testcase.expected)
+		}
+	}
+}
+
+func TestGetDynamicRouteKindType(t *testing.T) {
+	type TestCase struct {
+		name     string
+		expected DynamicRouteType
+	}
+	cases := []TestCase{
+		{"[slug]", DynamicRoutePrimary},
+		{"[...slug]", DynamicRouteCatchAll},
+		{"[[...slug]]", DynamicRouteOptionalCatchAll},
+	}
+	for _, testcase := range cases {
+		got, _ := GetDynamicRouteKindType(testcase.name)
+		if testcase.expected != got {
+			t.Errorf("GetDynamicRouteKindType(%q) returned %v wanted %v", testcase.name, got, testcase.expected)
+		}
+	}
+}

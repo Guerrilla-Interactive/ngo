@@ -2,13 +2,36 @@ package cmd
 
 import "testing"
 
+func TestRouteTitleKebabCase(t *testing.T) {
+	type TestCase struct {
+		name     string
+		expected string
+	}
+	cases := []TestCase{
+		{"suman", "suman"},
+		{"suman Chapai", "suman-chapai"},
+		{"   suman Chapai", "suman-chapai"},
+		{"   suman Chapai   ", "suman-chapai"},
+		{"suman Chapai   ", "suman-chapai"},
+		{" suman   Chapai   ", "suman-chapai"},
+		{"  s", "s"},
+	}
+	for _, testcase := range cases {
+		expected := testcase.expected
+		got := RouteTitleKebabCase(testcase.name)
+		if expected != got {
+			t.Errorf("RouteTitleKebabCase(%q) returned %v wanted %v", testcase.name, got, expected)
+		}
+	}
+}
+
 func TestIsValidDynamicRouteName(t *testing.T) {
 	type TestCase struct {
 		name     string
 		expected bool
 	}
 	cases := []TestCase{
-		{"[foo]", true},
+		{"[foo]", false}, // needs 'slug' literally
 		{"bar", false},
 		{"/suman", false},
 		{"[..slug]", false},

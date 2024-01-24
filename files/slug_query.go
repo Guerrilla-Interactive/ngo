@@ -2,13 +2,29 @@ package files
 
 import "text/template"
 
-const slug_query = `import type { InferType } from "groqd"
+const slugQuery = `import type { InferType } from "groqd"
 import { q } from "groqd"
 
-// TODO ADD YOUR QUERY
-export const {{.CamelCaseComponentName}}SlugQuery = q("*")
+import { basePageQuery } from "@/sanity/shame-queries/base-page.query"
 
-export type {{.PascalCaseComponentName}}SlugQueryType = NonNullable<InferType<typeof {{.CamelCaseComponentName}}SlugQuery>>
+export const {{.CamelCaseComponentName}}SlugQuery = q("*")
+    .filterByType("{{.CamelCaseComponentName}}")
+    .filter("slug.current == $slug")
+    .grab({
+        title: q.string().optional(),
+        slug: ["slug.current", q.string().optional()],
+        ...basePageQuery,
+    })
+    .slice(0)
+    .nullable()
+
+export type {{.PascalCaseComponentName}}SlugQuery = NonNullable<InferType<typeof {{.CamelCaseComponentName}}SlugQuery>>
 `
 
-var SlugQuery = template.Must(template.New("slug_query").Parse(slug_query))
+// Note that the query template for normal dynamic route, catch all dynamic route and
+// optional catch all dynamic route is all the same.
+var (
+	SlugQuery                 = template.Must(template.New("slugQuery").Parse(slugQuery))
+	SlugQueryCatchAll         = template.Must(template.New("slugQuery").Parse(slugQuery))
+	SlugQueryCatchAllOptional = template.Must(template.New("slugQuery").Parse(slugQuery))
+)

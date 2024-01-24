@@ -24,7 +24,7 @@ to create the required folder structure`,
 )
 
 func init() {
-	rootCmd.AddCommand(initCmd)
+	// rootCmd.AddCommand(initCmd)
 }
 
 // Returns a slice of git url of template repositories
