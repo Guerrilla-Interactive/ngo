@@ -11,6 +11,7 @@ import { runDraftQuery, runQuery } from '@/sanity/groqd-client'
 import { {{.CamelCaseComponentName}}SlugQuery } from "../({{.KebabCaseComponentName}}-slug-server)/{{.KebabCaseComponentName}}.slug-query"
 import { Preview{{.PascalCaseComponentName}}Slug } from "./{{.KebabCaseComponentName}}.slug-preview"
 import {{.PascalCaseComponentName}}SlugBody from "./{{.KebabCaseComponentName}}.slug-component"
+import { generatePageMeta } from 'src/shame-utils/generate-page-meta-util'
 
 
 interface PageParams extends Record<string, string | Array<string>> {
@@ -19,6 +20,16 @@ interface PageParams extends Record<string, string | Array<string>> {
 
 interface PageProps {
 	params: PageParams
+}
+
+export const generateMetadata = async ({ params }: PageProps) => {
+	if (params?.slug && params?.slug.length > 0) {
+		const data = await runQuery(
+		{{.CamelCaseComponentName}}SlugQuery,
+		{ slug: params.slug[0] }
+		)
+		return generatePageMeta(data?.metadata)
+	}
 }
 
 const {{.PascalCaseComponentName}}SlugRoute = async ({ params }: PageProps) => {

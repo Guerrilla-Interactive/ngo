@@ -11,6 +11,12 @@ import { runDraftQuery, runQuery } from '@/sanity/groqd-client'
 import { {{.CamelCaseComponentName}}IndexQuery } from '../({{.KebabCaseComponentName}}-index-server)/{{.KebabCaseComponentName}}.index-query'
 import {{.PascalCaseComponentName}}IndexBody from './{{.KebabCaseComponentName}}.index-component'
 import { {{.PascalCaseComponentName}}Preview} from './{{.KebabCaseComponentName}}.index-preview'
+import { generatePageMeta } from 'src/shame-utils/generate-page-meta-util'
+
+export const generateMetadata = async () => {
+  const data = await runQuery({{.CamelCaseComponentName}}IndexQuery, {})
+  return generatePageMeta(data?.metadata)
+}
 
 const {{.PascalCaseComponentName}}IndexRoute = async () => {
   const { isEnabled: draftModeEnabled } = draftMode()
