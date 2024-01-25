@@ -4,11 +4,8 @@
 
 ## Installation
 
-If you're on a macOS, run the folllowing command in your terminal to install the latest version of ngo.
+If you're on a macOS/Linux, run the folllowing command in your terminal to install the latest version of ngo.
 
 ```sh
-mkdir -p ~/.local 
-cd ~/.local
 curl -s https://ng-inky.vercel.app/install.txt | sh
-cd -
 ```
