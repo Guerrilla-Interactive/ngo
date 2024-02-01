@@ -36,7 +36,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.21
-      - uses: sumanchapai/go-semantic-release-action@6fc419ea5e96473d6d63a0a4dd4add02c351c98d
+      - uses: sumanchapai/go-semantic-release-action@8f0f8a0f8c94a107173b1cb5940296c55655f82e
         with:
           pre-release-post-dry-cmd: "go generate ./..."
           files-to-commit: "cmd/.version"
