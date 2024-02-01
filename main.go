@@ -9,6 +9,8 @@ package main
 
 import "github.com/Guerrilla-Interactive/ngo/cmd"
 
+var suman = "chapai"
+
 func main() {
 	cmd.Execute()
 }
