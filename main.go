@@ -1,7 +1,3 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
-
 // ngo is a cli that helps to you to build a NextJS project
 // Primarily, it is used to create files and folders when adding
 // routes
