@@ -38,7 +38,7 @@ jobs:
           go-version: 1.21
       - uses: sumanchapai/go-semantic-release-action@v1
         with:
-          pre-release-post-dry-cmd: "go generate ./..."
+          pre-release-post-dry-cmd: "cp .version cmd/.version"
           files-to-commit: "cmd/.version"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//go:generate cp ../.version ./
 //go:embed .version
 var version string
 
