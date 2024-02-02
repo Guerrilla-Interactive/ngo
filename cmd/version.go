@@ -12,8 +12,8 @@ var version string
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "See the installed version of ngo",
-	Long:  `See the installed version of ngo`,
+	Short: "print ngo version",
+	Long:  "print ngo version",
 	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Printf("%v\n", version)
 	},
