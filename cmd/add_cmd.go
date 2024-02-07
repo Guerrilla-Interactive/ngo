@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -44,26 +45,14 @@ If the dyanmic route is a catchall route, specify it as:
 ng add --type dynamic --name "/categories/[...slug]"`,
 
 		Run: func(_ *cobra.Command, _ []string) {
-			// Get parsed route type
-			r, err := praseRouteType(routeType)
+			wd, err := os.Getwd()
 			if err != nil {
 				errExit(err)
 			}
-			if r == FillerRoute {
-				errExit(ErrFillerNotImplemented)
-			}
-			// Get parsed route name (ex. without whitspaces)
-			n, err := praseRouteName(routeName)
+			err = ValidateAndRunAddCommand(routeName, routeType, wd)
 			if err != nil {
 				errExit(err)
 			}
-			// Check that the route name is valid for the given route type
-			// It checks for leading and trailing slashes
-			err = AssertRouteNameValid(r, n)
-			if err != nil {
-				errExit(err)
-			}
-			createRoute(r, n)
 		},
 	}
 )
@@ -82,22 +71,53 @@ func init() {
 	}
 }
 
+// Validates the given route name and route type and runs
+// the the route add command if the given input is valid assuming
+// the projectDir is where the NextJS project lives.
+// (Looks for package JSON lives in the provided dir or its parent dirs)
+func ValidateAndRunAddCommand(routeName string, routeType string, projectDir string) error {
+	// Get parsed route type
+	r, err := praseRouteType(routeType)
+	if err != nil {
+		errExit(err)
+	}
+	if r == FillerRoute {
+		errExit(ErrFillerNotImplemented)
+	}
+	// Get parsed route name (ex. without whitspaces)
+	n, err := praseRouteName(routeName)
+	if err != nil {
+		errExit(err)
+	}
+	// Check that the route name is valid for the given route type
+	// It checks for leading and trailing slashes
+	err = AssertRouteNameValid(r, n)
+	if err != nil {
+		errExit(err)
+	}
+	dir, err := getPackageJSONLevelDir(projectDir)
+	if err != nil {
+		return err
+	}
+	appDir, err := getAppDir(dir)
+	if err != nil {
+		return err
+	}
+	return CreateRoute(r, n, appDir)
+}
+
 // Create a route of given type and name
 // If no nextjs project exists (determined by presence of package.json)
 // in the current folder or any of the parents then exit with error
 // Preconditions:
 // 1. r is either a StaticRoute or a DynamicRoute
 // 2. name is a valid route name of the appropriate route type (r).
-func createRoute(r RouteType, name string) {
+func CreateRoute(r RouteType, name string, appDir string) error {
 	// Precondition check
 	if err := AssertRouteNameValid(r, name); err != nil {
 		panic(err)
 	}
 	// Fail if the given route already exists
-	appDir, err := GetAppDirFromWorkingDir()
-	if err != nil {
-		errExit(err)
-	}
 	routes := GetRoutes(appDir)
 	existsRoute := func(candidate string) bool {
 		_, err := RouteExists(candidate, routes, appDir)
@@ -163,7 +183,7 @@ func createRoute(r RouteType, name string) {
 		}
 		dynamicRouteKind, err := GetDynamicRouteKindType(routeParts[len(routeParts)-1])
 		if err != nil {
-			errExit(err)
+			return err
 		}
 		// Create the `routeLocation` folder, along with its parents that don't exist
 		// Note that we don't extract this logic for both Static and Dynamic route as
@@ -179,8 +199,9 @@ func createRoute(r RouteType, name string) {
 		CreatePathAndExitOnFail(routeLocation)
 		createStaticRoute(routeLocation, staticRouteName, routeName)
 	case FillerRoute:
-		errExit(ErrFillerNotImplemented)
+		return ErrFillerNotImplemented
 	default:
 		panic(fmt.Sprintf("unrecognized route - %v\n", r))
 	}
+	return nil
 }
