@@ -66,8 +66,7 @@ func getAppDir(dir string) (string, error) {
 // Get the sanity documents schema filename string, returns
 // error if the file doesn't exist
 func GetSanityDocumentSchemas(rootDir string) (string, error) {
-	var toReturn string
-	toReturn = filepath.Join(rootDir, "sanity/schemas/documents.ts")
+	toReturn := filepath.Join(rootDir, "sanity/schemas/documents.ts")
 	if _, err := os.Stat(toReturn); errors.Is(err, os.ErrNotExist) {
 		return toReturn, err
 	}
@@ -75,8 +74,7 @@ func GetSanityDocumentSchemas(rootDir string) (string, error) {
 }
 
 func GetSanityDeskCustomozieFileLocation(rootDir string) (string, error) {
-	var toReturn string
-	toReturn = filepath.Join(rootDir, "sanity/customize/desk.customize.sanity.tsx")
+	toReturn := filepath.Join(rootDir, "sanity/customize/desk.customize.sanity.tsx")
 	if _, err := os.Stat(toReturn); errors.Is(err, os.ErrNotExist) {
 		return toReturn, err
 	}
@@ -84,8 +82,7 @@ func GetSanityDeskCustomozieFileLocation(rootDir string) (string, error) {
 }
 
 func GetSanityPathResolverFileLocation(rootDir string) (string, error) {
-	var toReturn string
-	toReturn = filepath.Join(rootDir, "sanity/customize/resolve-path.ts")
+	toReturn := filepath.Join(rootDir, "sanity/customize/resolve-path.ts")
 	if _, err := os.Stat(toReturn); errors.Is(err, os.ErrNotExist) {
 		return toReturn, err
 	}
