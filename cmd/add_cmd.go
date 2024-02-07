@@ -155,7 +155,12 @@ func createRoute(r RouteType, name string) {
 	// To do that we first find the last parent of the route that doesn't exist
 	switch r {
 	case DynamicRoute:
-		dynamicRouteName := routeParts[len(routeParts)-2]
+		var dynamicRouteName string
+		if len(routeParts) == 1 {
+			dynamicRouteName = "root"
+		} else {
+			dynamicRouteName = routeParts[len(routeParts)-2]
+		}
 		dynamicRouteKind, err := GetDynamicRouteKindType(routeParts[len(routeParts)-1])
 		if err != nil {
 			errExit(err)
