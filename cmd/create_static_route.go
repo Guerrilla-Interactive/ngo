@@ -10,7 +10,7 @@ import (
 // Create static route in the given app directory
 // Preconditions:
 // name is valid static route name to be created at the location `at`
-func createStaticRoute(at string, name string, rawRouteName string) {
+func createStaticRoute(at string, name string, rawRouteName string, rootDir string) {
 	fmt.Printf("Creating static route at:\n%v\n\n", at)
 
 	schemasAndQueryFolder := filepath.Join(at, fmt.Sprintf("/(index)/(%v-index-core)/(%v-index-server)", name, name))
@@ -50,5 +50,5 @@ func createStaticRoute(at string, name string, rawRouteName string) {
 
 	// Automatically add schema imports, etc. to existing application
 	// Note here that name refers to the last part of the route name
-	FitNewRouteIntoExistingApp(name, schemaFilename, StaticRoute)
+	FitNewRouteIntoExistingApp(name, schemaFilename, StaticRoute, rootDir)
 }

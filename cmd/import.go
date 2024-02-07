@@ -8,12 +8,12 @@ import (
 )
 
 // Import sanity schema to document.ts and export from there
-func AddSchemaImportStatement(schemaExportName, schemaFilename string) error {
-	importString, err := SchemaExportImportString(schemaFilename, schemaExportName)
+func AddSchemaImportStatement(schemaExportName, schemaFilename, rootDir string) error {
+	importString, err := SchemaExportImportString(schemaFilename, schemaExportName, rootDir)
 	if err != nil {
 		return err
 	}
-	documentSchemasFileName, err := GetSanityDocumentSchemas()
+	documentSchemasFileName, err := GetSanityDocumentSchemas(rootDir)
 	if err != nil {
 		return err
 	}
@@ -30,16 +30,8 @@ func AddSchemaImportStatement(schemaExportName, schemaFilename string) error {
 	return nil
 }
 
-func SchemaExportImportString(path string, name string) (string, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-	dir, err := getPackageJSONLevelDir(wd)
-	if err != nil {
-		return "", err
-	}
-	importPath := strings.TrimPrefix(path, dir)
+func SchemaExportImportString(path, name, rootDir string) (string, error) {
+	importPath := strings.TrimPrefix(path, rootDir)
 	// Import leading slash
 	importPath = strings.TrimPrefix(importPath, "/")
 	// Remove ts, tsx extension
@@ -48,7 +40,7 @@ func SchemaExportImportString(path string, name string) (string, error) {
 	return fmt.Sprintf("\nexport { %v } from '%v'", name, importPath), nil
 }
 
-func SchemaImportString(name string) (string, error) {
+func SchemaImportString(name, rootDir string) (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -57,7 +49,7 @@ func SchemaImportString(name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	documentSchemasFileName, err := GetSanityDocumentSchemas()
+	documentSchemasFileName, err := GetSanityDocumentSchemas(rootDir)
 	if err != nil {
 		return "", err
 	}
@@ -72,8 +64,8 @@ func SchemaImportString(name string) (string, error) {
 }
 
 // Import sanity schema to document.ts and export from there
-func AddSchemaToDeskStructure(schemaExportName string, routeType RouteType) error {
-	deskCustomizationFile, err := GetSanityDeskCustomozieFileLocation()
+func AddSchemaToDeskStructure(schemaExportName string, routeType RouteType, rootDir string) error {
+	deskCustomizationFile, err := GetSanityDeskCustomozieFileLocation(rootDir)
 	deskStructureImportMagicString := "MAGIC_STRING_CUSTOM_IMPORT\n"
 	deskStructureItemMagicString := "MAGIC_STRING_LINE_DESK_STRUCTURES\n"
 	if err != nil {
@@ -89,7 +81,7 @@ func AddSchemaToDeskStructure(schemaExportName string, routeType RouteType) erro
 	if deskStructureItemString == "" {
 		return fmt.Errorf("invalid route %v for adding schema desk structure", routeType)
 	}
-	importString, err := SchemaImportString(schemaExportName)
+	importString, err := SchemaImportString(schemaExportName, rootDir)
 	if err != nil {
 		return err
 	}

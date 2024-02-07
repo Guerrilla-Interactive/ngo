@@ -65,52 +65,28 @@ func getAppDir(dir string) (string, error) {
 
 // Get the sanity documents schema filename string, returns
 // error if the file doesn't exist
-func GetSanityDocumentSchemas() (string, error) {
+func GetSanityDocumentSchemas(rootDir string) (string, error) {
 	var toReturn string
-	wd, err := os.Getwd()
-	if err != nil {
-		return toReturn, nil
-	}
-	dir, err := getPackageJSONLevelDir(wd)
-	if err != nil {
-		return toReturn, nil
-	}
-	toReturn = filepath.Join(dir, "sanity/schemas/documents.ts")
-	if _, err = os.Stat(toReturn); errors.Is(err, os.ErrNotExist) {
+	toReturn = filepath.Join(rootDir, "sanity/schemas/documents.ts")
+	if _, err := os.Stat(toReturn); errors.Is(err, os.ErrNotExist) {
 		return toReturn, err
 	}
 	return toReturn, nil
 }
 
-func GetSanityDeskCustomozieFileLocation() (string, error) {
+func GetSanityDeskCustomozieFileLocation(rootDir string) (string, error) {
 	var toReturn string
-	wd, err := os.Getwd()
-	if err != nil {
-		return toReturn, nil
-	}
-	dir, err := getPackageJSONLevelDir(wd)
-	if err != nil {
-		return toReturn, nil
-	}
-	toReturn = filepath.Join(dir, "sanity/customize/desk.customize.sanity.tsx")
-	if _, err = os.Stat(toReturn); errors.Is(err, os.ErrNotExist) {
+	toReturn = filepath.Join(rootDir, "sanity/customize/desk.customize.sanity.tsx")
+	if _, err := os.Stat(toReturn); errors.Is(err, os.ErrNotExist) {
 		return toReturn, err
 	}
 	return toReturn, nil
 }
 
-func GetSanityPathResolverFileLocation() (string, error) {
+func GetSanityPathResolverFileLocation(rootDir string) (string, error) {
 	var toReturn string
-	wd, err := os.Getwd()
-	if err != nil {
-		return toReturn, nil
-	}
-	dir, err := getPackageJSONLevelDir(wd)
-	if err != nil {
-		return toReturn, nil
-	}
-	toReturn = filepath.Join(dir, "sanity/customize/resolve-path.ts")
-	if _, err = os.Stat(toReturn); errors.Is(err, os.ErrNotExist) {
+	toReturn = filepath.Join(rootDir, "sanity/customize/resolve-path.ts")
+	if _, err := os.Stat(toReturn); errors.Is(err, os.ErrNotExist) {
 		return toReturn, err
 	}
 	return toReturn, nil

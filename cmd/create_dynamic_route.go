@@ -8,7 +8,7 @@ import (
 )
 
 // Create dynamic route in the given app directory
-func createDynamicRoute(at string, name string, kind DynamicRouteType, rawRouteName string) {
+func createDynamicRoute(at string, name string, kind DynamicRouteType, rootDir string) {
 	fmt.Printf("Creating %v at:\n%v\n\n", kind, at)
 
 	schemasAndQueryFolder := filepath.Join(at, fmt.Sprintf("/(%v-slug-core)/(%v-slug-server)", name, name))
@@ -58,5 +58,5 @@ func createDynamicRoute(at string, name string, kind DynamicRouteType, rawRouteN
 
 	// Automatically add schema imports, etc. to existing application
 	// Note here that name refers to the last part of the route name
-	FitNewRouteIntoExistingApp(name, schemaFilename, DynamicRoute)
+	FitNewRouteIntoExistingApp(name, schemaFilename, DynamicRoute, rootDir)
 }

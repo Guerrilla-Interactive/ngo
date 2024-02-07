@@ -49,7 +49,11 @@ ng add --type dynamic --name "/categories/[...slug]"`,
 			if err != nil {
 				errExit(err)
 			}
-			err = ValidateAndRunAddCommand(routeName, routeType, wd)
+			dir, err := getPackageJSONLevelDir(wd)
+			if err != nil {
+				errExit(err)
+			}
+			err = ValidateAndRunAddCommand(routeName, routeType, dir)
 			if err != nil {
 				errExit(err)
 			}
@@ -73,9 +77,9 @@ func init() {
 
 // Validates the given route name and route type and runs
 // the the route add command if the given input is valid assuming
-// the projectDir is where the NextJS project lives.
-// (Looks for package JSON lives in the provided dir or its parent dirs)
-func ValidateAndRunAddCommand(routeName string, routeType string, projectDir string) error {
+// the projectDir is the root folder of the NextJS project.
+// where package.JSON lives.
+func ValidateAndRunAddCommand(routeName string, routeType string, rootDir string) error {
 	// Get parsed route type
 	r, err := praseRouteType(routeType)
 	if err != nil {
@@ -95,15 +99,7 @@ func ValidateAndRunAddCommand(routeName string, routeType string, projectDir str
 	if err != nil {
 		errExit(err)
 	}
-	dir, err := getPackageJSONLevelDir(projectDir)
-	if err != nil {
-		return err
-	}
-	appDir, err := getAppDir(dir)
-	if err != nil {
-		return err
-	}
-	return CreateRoute(r, n, appDir)
+	return CreateRoute(r, n, rootDir)
 }
 
 // Create a route of given type and name
@@ -112,10 +108,15 @@ func ValidateAndRunAddCommand(routeName string, routeType string, projectDir str
 // Preconditions:
 // 1. r is either a StaticRoute or a DynamicRoute
 // 2. name is a valid route name of the appropriate route type (r).
-func CreateRoute(r RouteType, name string, appDir string) error {
+func CreateRoute(r RouteType, name string, rootDir string) error {
 	// Precondition check
 	if err := AssertRouteNameValid(r, name); err != nil {
 		panic(err)
+	}
+	// Get the app directory
+	appDir, err := getAppDir(rootDir)
+	if err != nil {
+		return err
 	}
 	// Fail if the given route already exists
 	routes := GetRoutes(appDir)
@@ -189,7 +190,7 @@ func CreateRoute(r RouteType, name string, appDir string) error {
 		// Note that we don't extract this logic for both Static and Dynamic route as
 		// fine-graining allows us to create route only after route kind specific error-checking.
 		CreatePathAndExitOnFail(routeLocation)
-		createDynamicRoute(routeLocation, dynamicRouteName, dynamicRouteKind, routeName)
+		createDynamicRoute(routeLocation, dynamicRouteName, dynamicRouteKind, rootDir)
 	case StaticRoute:
 		staticRouteName := routeParts[len(routeParts)-1]
 		if staticRouteName == "" {
@@ -197,7 +198,7 @@ func CreateRoute(r RouteType, name string, appDir string) error {
 		}
 		// Create the `routeLocation` folder, along with its parents that don't exist
 		CreatePathAndExitOnFail(routeLocation)
-		createStaticRoute(routeLocation, staticRouteName, routeName)
+		createStaticRoute(routeLocation, staticRouteName, routeName, rootDir)
 	case FillerRoute:
 		return ErrFillerNotImplemented
 	default:
