@@ -126,7 +126,7 @@ func CreateRoute(r RouteType, name string, rootDir string) error {
 	}
 	if foundRoute, err := RouteExists(name, routes, appDir); err == nil {
 		errExit(fmt.Sprintf("%v already exists",
-			RouteFromPagePath(foundRoute.pathToPage, appDir),
+			RouteFromPagePath(foundRoute.PathToPage, appDir),
 		))
 	}
 	// Remove the leading / is name
@@ -166,9 +166,9 @@ func CreateRoute(r RouteType, name string, rootDir string) error {
 	} else {
 		// Traverse up from page.tsx of the preExistingRoute page path walking up filler routes
 		preExistingRoute, err := RouteExists(preExistingRouteString, routes, appDir)
-		locationToCreateRoute = GetRootRouteByWalkingFillers(preExistingRoute.pathToPage)
+		locationToCreateRoute = GetRootRouteByWalkingFillers(preExistingRoute.PathToPage)
 		if err != nil {
-			panic(fmt.Errorf("expected %q to exist, can't find", preExistingRoute.pathToPage))
+			panic(fmt.Errorf("expected %q to exist, can't find", preExistingRoute.PathToPage))
 		}
 	}
 	routeLocation := filepath.Join(locationToCreateRoute, trimmedName)

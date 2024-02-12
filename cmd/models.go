@@ -38,8 +38,8 @@ type RouteTemplateVariable struct {
 }
 
 type Route struct {
-	pathToPage string // Full path (until page.tsx)
-	kind       RouteType
+	PathToPage string // Full path (until page.tsx)
+	Kind       RouteType
 }
 
 // Implement the sort interface by RouteLength
@@ -48,8 +48,8 @@ type ByRouteLength []Route
 func (a ByRouteLength) Len() int      { return len(a) }
 func (a ByRouteLength) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a ByRouteLength) Less(i, j int) bool {
-	iLen := len(strings.Split(a[i].pathToPage, "/"))
-	jLen := len(strings.Split(a[j].pathToPage, "/"))
+	iLen := len(strings.Split(a[i].PathToPage, "/"))
+	jLen := len(strings.Split(a[j].PathToPage, "/"))
 	return iLen < jLen
 }
 

@@ -26,13 +26,13 @@ var (
 			routes := GetRoutes(appDir)
 			sort.Sort(ByRouteLength(routes))
 			for _, r := range routes {
-				trimmedPath := RouteFromPagePath(r.pathToPage, appDir)
+				trimmedPath := RouteFromPagePath(r.PathToPage, appDir)
 				if list {
-					pathFromAppDir := strings.TrimPrefix(r.pathToPage, appDir)
+					pathFromAppDir := strings.TrimPrefix(r.PathToPage, appDir)
 					routeRoot := fmt.Sprintf("app%v", GetRootRouteByWalkingFillers(pathFromAppDir))
-					fmt.Printf("%v\t%v\t%v\n", r.kind, trimmedPath, routeRoot)
+					fmt.Printf("%v\t%v\t%v\n", r.Kind, trimmedPath, routeRoot)
 				} else {
-					fmt.Printf("%v\t%v\n", r.kind, trimmedPath)
+					fmt.Printf("%v\t%v\n", r.Kind, trimmedPath)
 				}
 			}
 		},
