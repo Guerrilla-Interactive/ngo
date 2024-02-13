@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -20,7 +21,7 @@ func IsValidTerminalPageRouteName(candidate string) bool {
 func FolderNameToRouteType(name string) RouteType {
 	// If foldername is the path to the folder, extract
 	// just the last part so we get the folder name instead
-	routeParts := strings.Split(name, "/")
+	routeParts := strings.Split(name, string(os.PathSeparator))
 	lastPart := routeParts[len(routeParts)-1]
 	if strings.HasPrefix(lastPart, "(") && strings.HasSuffix(lastPart, ")") {
 		return FillerRoute
@@ -33,7 +34,7 @@ func FolderNameToRouteType(name string) RouteType {
 
 func RouteTypeByPageTSXPath(path string) (RouteType, error) {
 	var kind RouteType
-	routeParts := strings.Split(path, "/")
+	routeParts := strings.Split(path, string(os.PathSeparator))
 	lastPart := routeParts[len(routeParts)-1]
 	if len(routeParts) < 2 {
 		return kind, errPagePathInsufficientLength
@@ -55,16 +56,16 @@ func RouteTypeByPageTSXPath(path string) (RouteType, error) {
 // Preconditions:
 // 1. pagePath is a valid page path
 func GetRootRouteByWalkingFillers(pagePath string) string {
-	routeParts := strings.Split(pagePath, "/")
+	routeParts := strings.Split(pagePath, string(os.PathSeparator))
 	i := len(routeParts) - 2 // Start from the folder path (not the page.tsx level)
 	for ; i > 0; i-- {
 		if !IsValidFillerRouteName(routeParts[i]) {
 			break
 		}
 	}
-	toReturn := strings.Join(routeParts[:i+1], "/")
+	toReturn := strings.Join(routeParts[:i+1], string(os.PathSeparator))
 	if toReturn == "" {
-		toReturn = "/"
+		toReturn = string(os.PathSeparator)
 	}
 	return toReturn
 }
