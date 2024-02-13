@@ -84,7 +84,7 @@ func RouteExists(name string, routes []Route, appDir string) (Route, error) {
 	// route with something universal as [slug] and [foobar] are equivalent for nextJS
 	nameGeneralized := DynamicRoutePartUnifiedRouteName(name)
 	for _, r := range routes {
-		rGeneralized := DynamicRoutePartUnifiedRouteName(RouteFromPagePath(r.pathToPage, appDir))
+		rGeneralized := DynamicRoutePartUnifiedRouteName(RouteFromPagePath(r.PathToPage, appDir))
 		// Exact match
 		if nameGeneralized == rGeneralized {
 			return r, nil
