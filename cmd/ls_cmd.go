@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -48,7 +49,7 @@ func init() {
 func GetRoutes(appDir string) []Route {
 	routes := make([]Route, 0)
 	isValidRoutePath := func(path string) bool {
-		routeParts := strings.Split(path, "/")
+		routeParts := strings.Split(path, string(os.PathSeparator))
 		lastPart := routeParts[len(routeParts)-1]
 		return IsValidTerminalPageRouteName(lastPart)
 	}

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -85,7 +86,7 @@ func (r DynamicRouteType) String() string {
 //  1. The path is a full path to page.tsx or page.jsx in a nextjs project
 func RouteFromPagePath(path string, appDir string) string {
 	trimmedAppDir := strings.TrimPrefix(path, appDir)
-	routeParts := strings.Split(trimmedAppDir, "/")
+	routeParts := strings.Split(trimmedAppDir, string(os.PathSeparator))
 	// Remove last part
 	routeParts = routeParts[:len(routeParts)-1]
 	routePartsWithoutFiller := make([]string, 0)
@@ -94,15 +95,15 @@ func RouteFromPagePath(path string, appDir string) string {
 			routePartsWithoutFiller = append(routePartsWithoutFiller, r)
 		}
 	}
-	result := strings.Join(routePartsWithoutFiller, "/")
+	result := strings.Join(routePartsWithoutFiller, string(os.PathSeparator))
 	// Note trailing slash has to be trimmed before adding a leading slash
 	// Remove trailing slash
-	result = strings.TrimSuffix(result, "/")
+	result = strings.TrimSuffix(result, string(os.PathSeparator))
 	// Add leading slash
-	if len(result) == 0 || result[0] != '/' {
-		result = fmt.Sprintf("/%v", result)
+	if len(result) == 0 || result[0] != os.PathSeparator {
+		result = fmt.Sprintf("%v%v", string(os.PathSeparator), result)
 	}
 	// Remove any double slashes
-	result = strings.ReplaceAll(result, "//", "/")
+	result = strings.ReplaceAll(result, fmt.Sprintf("%v%v", os.PathSeparator, os.PathSeparator), string(os.PathSeparator))
 	return result
 }
