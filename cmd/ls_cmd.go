@@ -30,8 +30,7 @@ var (
 				trimmedPath := RouteFromPagePath(r.PathToPage, appDir)
 				if list {
 					pathFromAppDir := strings.TrimPrefix(r.PathToPage, appDir)
-					routeRoot := fmt.Sprintf("app%v", GetRootRouteByWalkingFillers(pathFromAppDir))
-					fmt.Printf("%v\t%v\t%v\n", r.Kind, trimmedPath, routeRoot)
+					fmt.Printf("%v\t%v\t%v\n", r.Kind, trimmedPath, pathFromAppDir)
 				} else {
 					fmt.Printf("%v\t%v\n", r.Kind, trimmedPath)
 				}
