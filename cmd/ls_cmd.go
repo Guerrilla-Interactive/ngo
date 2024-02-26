@@ -96,9 +96,10 @@ func GetRoutes(appDir string) []Route {
 	for _, r := range routes {
 		rRootParts := strings.Split(r.RouteRepresentation, string(os.PathSeparator))
 		fillerRouteRoot := strings.Join(rRootParts[:len(rRootParts)-1], string(os.PathSeparator))
-		// Root route representation is "", which is also the root filler
-		if fillerRouteRoot == "/" {
-			fillerRouteRoot = ""
+		// Skip bogus fillers.
+		// Techincally, "/" is an invalid route and "" is a root route not a filler
+		if fillerRouteRoot == "/" || fillerRouteRoot == "" {
+			continue
 		}
 		if _, ok := fillers[fillerRouteRoot]; !ok {
 			filler := Route{PathToPage: "", RouteRepresentation: fillerRouteRoot, Kind: FillerRoute}
