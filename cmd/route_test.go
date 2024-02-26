@@ -9,13 +9,9 @@ func TestFoldernameToRouteType(t *testing.T) {
 	}
 	cases := []TestCase{
 		{"foobar", StaticRoute},
-		{"/(main)/foobar", StaticRoute},
-		{"/(foobar)/(xoo)/xyz", StaticRoute},
-		{"/(foobar)/[slug]/xyz", StaticRoute},
-		{"/(foobar)/[...slug]/xyz", StaticRoute},
-		{"/(foobar)", FillerRoute},
-		{"/(foobar)/[...slug]", DynamicRoute},
-		{"/(foobar)/xyng/[...slug]", DynamicRoute},
+		{"[slug]", DynamicRoute},
+		{"[...index]", DynamicCatchAllRoute},
+		{"[[...index]]", DynamicCatchAllOptionalRoute},
 	}
 	for _, testcase := range cases {
 		expected := testcase.kind
@@ -46,7 +42,7 @@ func TestRouteTypeByPageTSXPath(t *testing.T) {
 		{"/(foobar)/(xoo)/xyz/page.tsx", StaticRoute, nil},
 		{"/(foobar)/[slug]/xyz/page.tsx", StaticRoute, nil},
 		{"/(foobar)/[...slug]/xyz/page.tsx", StaticRoute, nil},
-		{"/(foobar)/[...slug]/page.tsx", DynamicRoute, nil},
+		{"/(foobar)/[...slug]/page.tsx", DynamicCatchAllRoute, nil},
 		{"/(foobar)/xyng/[...slug]", bogusRouteType, errPagePathInvalidName},
 		// Note that this is a dynamic route with path
 		// /[slug]/ and not a filler route,
@@ -103,27 +99,36 @@ func TestGetRootRouteByWalkingFillers(t *testing.T) {
 		{"/app/src/pieces/(index)/page.tsx", "/app/src/pieces"},
 	}
 	for _, testcase := range cases {
-		got := GetRootRouteByWalkingFillers(testcase.name)
+		got := GetRouteRootByWalkingFillerDirs(testcase.name)
 		if testcase.expected != got {
 			t.Errorf("GetRootRouteByWalkingFillers(%q) returned %v wanted %v", testcase.name, got, testcase.expected)
 		}
 	}
 }
 
-func TestGetDynamicRouteKindType(t *testing.T) {
+func TestGetParentRouteName(t *testing.T) {
 	type TestCase struct {
 		name     string
-		expected DynamicRouteType
+		expected string
 	}
 	cases := []TestCase{
-		{"[slug]", DynamicRoutePrimary},
-		{"[...slug]", DynamicRouteCatchAll},
-		{"[[...slug]]", DynamicRouteOptionalCatchAll},
+		{"", ""},
+		{"/[slug]", ""},
+		{"/[...slug]", ""},
+		{"/[[...slug]]", ""},
+		{"/index", ""},
+		{"/products", ""},
+		{"/products/catgories", "/products"},
+		{"/products/catgories/index", "/products"},
+		{"/products/catgories/[slug]", "/products"},
+		{"/products/catgories/[...slug]", "/products"},
+		{"/products/catgories/[[...slug]]", "/products"},
+		{"/products/[slug]/archive", "/products/[slug]"},
 	}
 	for _, testcase := range cases {
-		got, _ := GetDynamicRouteKindType(testcase.name)
+		got := GetParentRouteName(testcase.name)
 		if testcase.expected != got {
-			t.Errorf("GetDynamicRouteKindType(%q) returned %v wanted %v", testcase.name, got, testcase.expected)
+			t.Errorf("GetParentRouteName(%q) returned %v wanted %v", testcase.name, got, testcase.expected)
 		}
 	}
 }

@@ -27,3 +27,20 @@ the process and manually add `~/.local/bin` to your PATH environment variable.
 rm -f `which ngo`
 curl -s https://ng-inky.vercel.app/install.txt | sh
 ```
+
+## Vocabulary
+
+1. Static Route is a route whose name that ends with "/index"
+1. A Dyanamic Route is a route whose name that ends with "/[slug]". Although
+   dynamic route may end with friends of "/[slug]" (for example:
+   "/[product-id]", "/[id]", etc.) it may only be created with "/[slug]"
+1. Similar to Dyanmic Route, a Catch All Dynamic Route is a route whose name
+   ends with "/[...slug]"
+1. Simialr to Dynamic Route or a Catch All Dynamic Route, a Optional Catch All
+   Dynamic Route is a route whose name ends with "/[[...slug]]"
+1. Filler paths isn't supported when adding a route. For example
+   "/products/index" is a valid route name but "/products/(something)/index" is
+   not. Although we do recognize existing routes paths with filler folders.
+1. Note the difference between filler path and a filler route, a filler route is
+   just a folder without page.tsx while a filler path part of the route name
+   surrounded with parenthesis.

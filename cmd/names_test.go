@@ -25,30 +25,60 @@ func TestRouteTitleKebabCase(t *testing.T) {
 	}
 }
 
-func TestIsValidDynamicRouteName(t *testing.T) {
+func TestIsRouteNameValid(t *testing.T) {
 	type TestCase struct {
 		name     string
 		expected bool
 	}
 	cases := []TestCase{
-		{"[foo]", false}, // needs 'slug' literally
-		{"bar", false},
-		{"/suman", false},
-		{"[..slug]", false},
-		{"[...slug]", true},
-		{"[[...slug]]", true},
-		{"[[...slug]", false},
-		{"[[..slug]", false},
-		{"[[[...slug]]]", false},
-		{"[[[[...slug]]]]", false},
-		{"[[[...slug chapai]]]", false},
-		{"[[...slug chapai]]", false},
+		{"/index/", false}, // must not contain trailing slash
+		{"index", false},   // must contain leading slash
+		{"/index", true},
+		{"/products/index", true},
+		{"/products", true},              // Filler route
+		{"/products/(something)", false}, // invalid folder name
+		{"/(foobar)", false},             // invalid folder name
+		{"/[slug]", true},                // invalid folder name
+		{"/[index]", false},              // must litrally be "slug" or its friends inside brackets
+		{"/products/bogus-filler", true},
+		{"/products/[slug]", true},
+		{"/products/[...slug]", true},
+		{"/products/[[...slug]]", true},
+		{"/products/categories/[[...slug]]", true},
+		{"/products/categories/[[...index]]", false}, // must literally be "slug" inside brackets
 	}
 	for _, testcase := range cases {
 		expected := testcase.expected
-		got := IsValidDynamicRouteName(testcase.name)
+		got := IsRouteNameValid(testcase.name)
 		if expected != got {
-			t.Errorf("IsValidDynamicRouteName(%q) returned %v wanted %v", testcase.name, got, expected)
+			t.Errorf("IsRouteNameValid(%q) returned %v wanted %v", testcase.name, got, expected)
+		}
+	}
+}
+
+func TestIsValidFolderName(t *testing.T) {
+	type TestCase struct {
+		name     string
+		expected bool
+	}
+	cases := []TestCase{
+		{"", false}, // expect non-empty
+		{"a", true},
+		{"ab", true},
+		{"abc", true},
+		{"(abc)", false},
+		{"(abc-def)", false},
+		{"(abc-def)abc", false},
+		{"abc-def", true},
+		{"abc-def-", false},
+		{"-abc-def", false},
+		{"-abc-def-", false},
+	}
+	for _, testcase := range cases {
+		expected := testcase.expected
+		got := IsValidFolderName(testcase.name)
+		if expected != got {
+			t.Errorf("IsValidFolderName(%q) returned %v wanted %v", testcase.name, got, expected)
 		}
 	}
 }

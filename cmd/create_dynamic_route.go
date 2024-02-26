@@ -8,7 +8,10 @@ import (
 )
 
 // Create dynamic route in the given app directory
-func createDynamicRoute(at string, name string, kind DynamicRouteType, rootDir string) {
+// Preconditions:
+// route type (kind) can either be:
+// DynamicRoute, DynamicCatchAllRoute, DynamicCatchAllOptionalRoute
+func createDynamicRoute(at string, name string, kind RouteType, rootDir string) {
 	fmt.Printf("Creating %v at:\n%v\n\n", kind, at)
 
 	schemasAndQueryFolder := filepath.Join(at, fmt.Sprintf("/(%v-slug-core)/(%v-slug-server)", name, name))
@@ -25,19 +28,19 @@ func createDynamicRoute(at string, name string, kind DynamicRouteType, rootDir s
 	pageBodyComponentFilename := filepath.Join(pageAndPreviewFolder, fmt.Sprintf("%v.slug-component.tsx", name))
 
 	switch kind {
-	case DynamicRoutePrimary:
+	case DynamicRoute:
 		CreateFileContents(schemaFilename, files.SlugSchema, name)
 		CreateFileContents(queryFilename, files.SlugQuery, name)
 		CreateFileContents(pageFilename, files.SlugPage, name) // page.tsx
 		CreateFileContents(previewFilename, files.SlugPreview, name)
 		CreateFileContents(pageBodyComponentFilename, files.PageSlugBody, name)
-	case DynamicRouteCatchAll:
+	case DynamicCatchAllRoute:
 		CreateFileContents(schemaFilename, files.SlugSchemaCatchAll, name)
 		CreateFileContents(queryFilename, files.SlugQueryCatchAll, name)
 		CreateFileContents(pageFilename, files.SlugPageCatchAll, name) // page.tsx
 		CreateFileContents(previewFilename, files.SlugPreviewCatchAll, name)
 		CreateFileContents(pageBodyComponentFilename, files.PageSlugBodyCatchAll, name)
-	case DynamicRouteOptionalCatchAll:
+	case DynamicCatchAllOptionalRoute:
 		CreateFileContents(schemaFilename, files.SlugSchemaCatchAllOptional, name)
 		CreateFileContents(queryFilename, files.SlugQueryCatchAllOptional, name)
 		CreateFileContents(pageFilename, files.SlugPageCatchAllOptional, name) // page.tsx

@@ -6,30 +6,20 @@ import (
 	"strings"
 )
 
-type RouteType int
-
-const (
-	FillerRoute  RouteType = 0
-	StaticRoute  RouteType = 1
-	DynamicRoute RouteType = 2
-)
-
-type DynamicRouteType int
-
-const (
-	DynamicRoutePrimary          DynamicRouteType = 0
-	DynamicRouteCatchAll         DynamicRouteType = 1
-	DynamicRouteOptionalCatchAll DynamicRouteType = 2
+type (
+	RouteType        string
+	DynamicRouteType RouteType
 )
 
 const (
-	FillerRouteString  = "Filler"
-	StaticRouteString  = "Static"
-	DyanmicRouteString = "Dynamic"
-
-	DyanmicRoutePrimaryString          = "dynamic route [slug]"
-	DyanmicRouteCatchAllString         = "catchall dynamic route [...slug]"
-	DyanmicRouteOptionalCatchAllString = "optional catchall dynamic route [[...slug]]"
+	RootRoute RouteType = "root" // Root route is represented by an empty string
+	// Note filler route is the parent of a static route, filler route is not the route
+	// with parenthesis. The folder with parenthesis is better called a filler folder/directory
+	FillerRoute                  RouteType = "filler"
+	StaticRoute                  RouteType = "static"
+	DynamicRoute                 RouteType = "dynamic"
+	DynamicCatchAllRoute         RouteType = "dynamicCatchAll"
+	DynamicCatchAllOptionalRoute RouteType = "dynamicCatchAllOptional"
 )
 
 type RouteTemplateVariable struct {
@@ -39,8 +29,10 @@ type RouteTemplateVariable struct {
 }
 
 type Route struct {
-	PathToPage string // Full path (until page.tsx)
-	Kind       RouteType
+	PathToPage string // Full path (until page.tsx), empty string for a filler route
+	// This is how the route is represented, for example, in the add command
+	RouteRepresentation string
+	Kind                RouteType
 }
 
 // Implement the sort interface by RouteLength
@@ -55,25 +47,7 @@ func (a ByRouteLength) Less(i, j int) bool {
 }
 
 func (r RouteType) String() string {
-	switch r {
-	case FillerRoute:
-		return FillerRouteString
-	case StaticRoute:
-		return StaticRouteString
-	default:
-		return DyanmicRouteString
-	}
-}
-
-func (r DynamicRouteType) String() string {
-	switch r {
-	case DynamicRoutePrimary:
-		return DyanmicRoutePrimaryString
-	case DynamicRouteCatchAll:
-		return DyanmicRouteCatchAllString
-	default:
-		return DyanmicRouteOptionalCatchAllString
-	}
+	return string(r)
 }
 
 // Returns the string representing path for the route
@@ -89,13 +63,13 @@ func RouteFromPagePath(path string, appDir string) string {
 	routeParts := strings.Split(trimmedAppDir, string(os.PathSeparator))
 	// Remove last part
 	routeParts = routeParts[:len(routeParts)-1]
-	routePartsWithoutFiller := make([]string, 0)
+	routePartsWithoutFillerDirectories := make([]string, 0)
 	for _, r := range routeParts {
-		if FolderNameToRouteType(r) != FillerRoute {
-			routePartsWithoutFiller = append(routePartsWithoutFiller, r)
+		if !isValidFillerDirectory(r) {
+			routePartsWithoutFillerDirectories = append(routePartsWithoutFillerDirectories, r)
 		}
 	}
-	result := strings.Join(routePartsWithoutFiller, string(os.PathSeparator))
+	result := strings.Join(routePartsWithoutFillerDirectories, string(os.PathSeparator))
 	// Note trailing slash has to be trimmed before adding a leading slash
 	// Remove trailing slash
 	result = strings.TrimSuffix(result, string(os.PathSeparator))

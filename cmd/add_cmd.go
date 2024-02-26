@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,26 +22,37 @@ var (
 // addCmd represents the route subcommand of the add command
 var (
 	routeName string // command flag
-	routeType string // command flag
 	addCmd    = &cobra.Command{
 		Use:   "add",
 		Short: "add a route",
+		Args: func(_ *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return errors.New("expected one argument for route name")
+			}
+			routeName = args[0]
+			return nil
+		},
 		Long: `Add a route to your next project.
-Routes can be static or dynamic. Specify the name of the route using the 
---name flag and type ('dynamic'/'static') using the --type flag).
 
 Creates a static route called about:
-ng add --type static --name "/about"
+ng add "/about/index"
+
+Creates a static route called values inside about:
+ng add "/about/values/index"
+
+Creates a dynamic product route called about:
+ng add "/product/[slug]"
+
+Creates a dynamic catchall product route called about:
+ng add "/product/[...slug]"
+
+Creates a dynamic catchall optional product route called about:
+ng add "/product/[[...slug]]"
 
 Note that the leading "/" is mandatory and no trailing slash allowed.
-Static root route is represented by "/"
+Static root route is represented by "/index"
 
-To create a dynamic route called categories:
-ng add --type dynamic --name "/categories/[slug]"
-where the word 'slug' could be replaced with one that you find appropriate
-
-If the dyanmic route is a catchall route, specify it as:
-ng add --type dynamic --name "/categories/[...slug]"`,
+Dynamic root route is represented by "/[slug]"`,
 
 		Run: func(_ *cobra.Command, _ []string) {
 			wd, err := os.Getwd()
@@ -53,7 +63,7 @@ ng add --type dynamic --name "/categories/[...slug]"`,
 			if err != nil {
 				errExit(err)
 			}
-			err = ValidateAndRunAddCommand(routeName, routeType, dir)
+			err = ValidateAndRunAddCommand(routeName, dir)
 			if err != nil {
 				errExit(err)
 			}
@@ -63,146 +73,134 @@ ng add --type dynamic --name "/categories/[...slug]"`,
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-	addCmd.Flags().StringVar(&routeType, "type", "", "'dyanamic' or 'static'")
-	addCmd.Flags().StringVar(&routeName, "name", "", "name of the route")
-	err := addCmd.MarkFlagRequired("type")
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = addCmd.MarkFlagRequired("name")
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 // Validates the given route name and route type and runs
 // the the route add command if the given input is valid assuming
 // the projectDir is the root folder of the NextJS project.
 // where package.JSON lives.
-func ValidateAndRunAddCommand(routeName string, routeType string, rootDir string) error {
-	// Get parsed route type
-	r, err := praseRouteType(routeType)
+func ValidateAndRunAddCommand(routeName string, rootDir string) error {
+	// Check if the route name is valid
+	// Then get the route type from the given name
+	r, err := RouteTypeFromRouteName(routeName)
 	if err != nil {
 		errExit(err)
 	}
 	if r == FillerRoute {
 		errExit(ErrFillerNotImplemented)
 	}
-	// Get parsed route name (ex. without whitspaces)
-	n, err := praseRouteName(routeName)
-	if err != nil {
-		errExit(err)
-	}
-	// Check that the route name is valid for the given route type
-	// It checks for leading and trailing slashes
-	err = AssertRouteNameValid(r, n)
-	if err != nil {
-		errExit(err)
-	}
-	return CreateRoute(r, n, rootDir)
+	return CreateRoute(routeName, rootDir)
 }
 
 // Create a route of given type and name
 // If no nextjs project exists (determined by presence of package.json)
 // in the current folder or any of the parents then exit with error
 // Preconditions:
-// 1. r is either a StaticRoute or a DynamicRoute
-// 2. name is a valid route name of the appropriate route type (r).
-func CreateRoute(r RouteType, name string, rootDir string) error {
-	// Precondition check
-	if err := AssertRouteNameValid(r, name); err != nil {
+// 1. name is a valid route name of the appropriate route type (r).
+// 2. routeName is a either static route or one of the dyanamic routes (dynamic,
+// dynamic catch all or dynamic catch all optional)
+func CreateRoute(routeName, rootDir string) error {
+	// Preconditions check
+	if err := RouteNameValid(routeName); err != nil {
 		panic(err)
 	}
+
+	routeKind, err := RouteTypeFromRouteName(routeName)
+	if err != nil {
+		return err
+	}
+	if routeKind == FillerRoute {
+		panic("creating filler route is unsupported")
+	}
+	if routeKind == RootRoute {
+		return nil
+	}
+
 	// Get the app directory
 	appDir, err := getAppDir(rootDir)
 	if err != nil {
 		return err
 	}
-	// Fail if the given route already exists
+
+	// Get list of existing routes
 	routes := GetRoutes(appDir)
+	// Anonymous function existsRoute that returns a boolean
+	// indicating if the route of a given name already exists
 	existsRoute := func(candidate string) bool {
 		_, err := RouteExists(candidate, routes, appDir)
 		return err == nil
 	}
-	if foundRoute, err := RouteExists(name, routes, appDir); err == nil {
+
+	// Fail if the given route already exists
+
+	// Note that we are not using the existsRoute function here because
+	// we also need the result of where the route exists
+	// (i.e the first thing that RouteExists returns)
+	if foundRoute, err := RouteExists(routeName, routes, appDir); err == nil {
 		errExit(fmt.Sprintf("%v already exists",
 			RouteFromPagePath(foundRoute.PathToPage, appDir),
 		))
 	}
-	// Remove the leading / is name
-	nameLeadinSlashTrimmed := strings.TrimPrefix(name, "/")
-	routeParts := strings.Split(nameLeadinSlashTrimmed, "/")
-	secondLastRoutePartIndex := len(routeParts) - 2
-	// Note that if this is a dynamic route, it contains extra flavor of
-	// [...slug] or its variant that needs to be removed
-	if r == DynamicRoute {
-		secondLastRoutePartIndex--
-	}
-	var preExistingRouteString string
-	for i := 0; i <= secondLastRoutePartIndex; i++ {
-		var routeSoFar string
-		// Look ahead to check if it's a dynamic route
-		// Otherwise the routeSoFar will be incorrectly built
-		if i < secondLastRoutePartIndex {
-			if IsValidDynamicRouteName(routeParts[i+1]) {
-				i++
-			}
-		}
-		routeSoFar = fmt.Sprintf("/%v", strings.Join(routeParts[:i+1], "/"))
-		// Check if the route so far exists
-		if existsRoute(DynamicRoutePartUnifiedRouteName(routeSoFar)) {
-			preExistingRouteString = routeSoFar
-		} else {
-			break
-		}
-	}
-	// Trim the route name by removing pre-existing route string
-	trimmedName := strings.TrimPrefix(name, preExistingRouteString)
 
-	var locationToCreateRoute string
-	// If preExistingRoute is "", expected to create at appDir level
-	if preExistingRouteString == "" {
-		locationToCreateRoute = appDir
-	} else {
-		// Traverse up from page.tsx of the preExistingRoute page path walking up filler routes
-		preExistingRoute, err := RouteExists(preExistingRouteString, routes, appDir)
-		locationToCreateRoute = GetRootRouteByWalkingFillers(preExistingRoute.PathToPage)
-		if err != nil {
-			panic(fmt.Errorf("expected %q to exist, can't find", preExistingRoute.PathToPage))
-		}
+	// We now need
+	// 1. Title for the route (for things like schema name, component name, etc...)
+	// 2. Route name, which we already have
+	// 3. Route type (static or dynamic)
+	// 4. Location to create route
+
+	// We find the closest parent of the route and create
+	// the route as its child (by creating the necessary folders to
+	// match the route's path)
+	parentName := GetParentRouteName(routeName)
+
+	// Note that in several places in the code below, we are conditionally
+	// checking for parent == "" which tells whether the parent is a root route
+	// For example, when creating /index static route, its parent is ""
+
+	// Find the first parent that exists or the root route if no parent exists
+	for parentName != "" && !existsRoute(parentName) {
+		parentName = GetParentRouteName(parentName)
 	}
-	routeLocation := filepath.Join(locationToCreateRoute, trimmedName)
-	// First we need to find the location at which we can create the route
-	// To do that we first find the last parent of the route that doesn't exist
-	switch r {
-	case DynamicRoute:
-		var dynamicRouteName string
-		if len(routeParts) == 1 {
-			dynamicRouteName = "root"
-		} else {
-			dynamicRouteName = routeParts[len(routeParts)-2]
-		}
-		dynamicRouteKind, err := GetDynamicRouteKindType(routeParts[len(routeParts)-1])
+
+	// We now get the location where we need to create the route
+	locationToCreateRoute := appDir
+	if parentName != "" {
+		r, err := RouteExists(parentName, routes, appDir)
 		if err != nil {
 			return err
 		}
-		// Create the `routeLocation` folder, along with its parents that don't exist
-		// Note that we don't extract this logic for both Static and Dynamic route as
-		// fine-graining allows us to create route only after route kind specific error-checking.
-		CreatePathAndExitOnFail(routeLocation)
-		createDynamicRoute(routeLocation, dynamicRouteName, dynamicRouteKind, rootDir)
-	case StaticRoute:
-		staticRouteName := routeParts[len(routeParts)-1]
-		if staticRouteName == "" {
-			staticRouteName = "root"
-		}
-		// Create the `routeLocation` folder, along with its parents that don't exist
-		CreatePathAndExitOnFail(routeLocation)
-		createStaticRoute(routeLocation, staticRouteName, routeName, rootDir)
-	case FillerRoute:
-		return ErrFillerNotImplemented
-	default:
-		panic(fmt.Sprintf("unrecognized route - %v\n", r))
+		locationToCreateRoute = GetRouteRootByWalkingFillerDirs(r.PathToPage)
 	}
+
+	// Create any missing directories in the locationToCreateRoute
+	// For example, if creating a static route with name "/about/values/sustainability/index",
+	// if the "/about" already exists, we need to create th folder "values/sustainability" inside
+	// the root of the "about" route (by route we mean, first parent of about's page.tsx that's
+	// not a filler directory)
+	foldersToCreate := strings.TrimPrefix(routeName, parentName)
+	if routeKind == StaticRoute {
+		foldersToCreate = strings.TrimSuffix(foldersToCreate, "index")
+	}
+	// This is the filepath level where we can create page.tsx files
+	// Note though that we might, in reality, create the page.tsx file inside
+	// a filler directory in this path.
+	locationToCreateRoute = filepath.Join(locationToCreateRoute, foldersToCreate)
+	// We create all necessary foldrs by calling this function
+	CreatePathAndExitOnFail(locationToCreateRoute)
+
+	// Now we create a title for the route that is used for component names and such
+	var routeTitle string
+	routeParts := strings.Split(routeName, string(os.PathSeparator))
+	if len(routeParts) == 2 {
+		routeTitle = "root"
+	} else {
+		routeTitle = routeParts[len(routeParts)-2]
+	}
+	if routeKind == StaticRoute {
+		createStaticRoute(locationToCreateRoute, routeTitle, routeName, rootDir)
+		return nil
+	}
+	// Route kind is Dyanmic Route (of any variant: catchall, catchall optional, etc...)
+	createDynamicRoute(locationToCreateRoute, routeTitle, routeKind, rootDir)
 	return nil
 }

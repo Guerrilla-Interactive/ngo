@@ -18,13 +18,17 @@ func IsValidTerminalPageRouteName(candidate string) bool {
 	return candidate == "page.tsx" || candidate == "page.jsx"
 }
 
+// Preconditions,
+// name is a valid folder name for Dyanmic or a Static route
 func FolderNameToRouteType(name string) RouteType {
 	// If foldername is the path to the folder, extract
 	// just the last part so we get the folder name instead
 	routeParts := strings.Split(name, string(os.PathSeparator))
 	lastPart := routeParts[len(routeParts)-1]
-	if strings.HasPrefix(lastPart, "(") && strings.HasSuffix(lastPart, ")") {
-		return FillerRoute
+	if strings.HasPrefix(lastPart, "[[") && strings.HasSuffix(lastPart, "]]") {
+		return DynamicCatchAllOptionalRoute
+	} else if strings.HasPrefix(lastPart, "[...") && strings.HasSuffix(lastPart, "]") {
+		return DynamicCatchAllRoute
 	} else if strings.HasPrefix(lastPart, "[") && strings.HasSuffix(lastPart, "]") {
 		return DynamicRoute
 	} else {
@@ -32,6 +36,9 @@ func FolderNameToRouteType(name string) RouteType {
 	}
 }
 
+// Preconditions:
+// path is a valid full path to page.tsx or page.jsx on
+// a nextJS project with app directory
 func RouteTypeByPageTSXPath(path string) (RouteType, error) {
 	var kind RouteType
 	routeParts := strings.Split(path, string(os.PathSeparator))
@@ -42,24 +49,30 @@ func RouteTypeByPageTSXPath(path string) (RouteType, error) {
 	if !IsValidTerminalPageRouteName(lastPart) {
 		return kind, errPagePathInvalidName
 	}
-	// Now we traverse up from the lowest child ignoring all filler routes
+	// Now we traverse up from the lowest child ignoring all filler directories
 	for i := len(routeParts) - 2; i >= 0; i-- {
 		name := routeParts[i]
-		if kind := FolderNameToRouteType(name); kind != FillerRoute {
-			return kind, nil
+		if isValidFillerDirectory(name) {
+			continue
 		}
+		kind := FolderNameToRouteType(name)
+		return kind, nil
 	}
 	return StaticRoute, nil
+}
+
+func isValidFillerDirectory(candidate string) bool {
+	return strings.HasPrefix(candidate, "(") && strings.HasSuffix(candidate, ")")
 }
 
 // Get to route root traversing walking up stepping on filler routes
 // Preconditions:
 // 1. pagePath is a valid page path
-func GetRootRouteByWalkingFillers(pagePath string) string {
+func GetRouteRootByWalkingFillerDirs(pagePath string) string {
 	routeParts := strings.Split(pagePath, string(os.PathSeparator))
 	i := len(routeParts) - 2 // Start from the folder path (not the page.tsx level)
 	for ; i > 0; i-- {
-		if !IsValidFillerRouteName(routeParts[i]) {
+		if !isValidFillerDirectory(routeParts[i]) {
 			break
 		}
 	}
@@ -97,14 +110,37 @@ func RouteExists(name string, routes []Route, appDir string) (Route, error) {
 	return toReturn, fmt.Errorf("route of name %v not found", name)
 }
 
-func GetDynamicRouteKindType(name string) (DynamicRouteType, error) {
-	if DynamicRouteNameRegex.Match([]byte(name)) {
-		return DynamicRoutePrimary, nil
-	} else if DynamicRouteCatchAllNameRegex.Match([]byte(name)) {
-		return DynamicRouteCatchAll, nil
-	} else if DynamicRouteOptionalCatchAllNameRegex.Match([]byte(name)) {
-		return DynamicRouteOptionalCatchAll, nil
+// Get the route for the parent of the given route
+// If no parents exists (for example for route name "/index"),
+// returns the name of the root route, which is ""
+//
+// Preconditions:
+// name is a valid route name
+//
+// Returns:
+// a valid route name
+func GetParentRouteName(name string) string {
+	// Precondition check
+	if err := RouteNameValid(routeName); err != nil {
+		panic(err)
 	}
-	var bogus DynamicRouteType
-	return bogus, fmt.Errorf("name %q doesn't match dynamic route naming convention", name)
+	kind, err := RouteTypeFromRouteName(name)
+	if err != nil {
+		panic(err)
+	}
+	routeParts := strings.Split(name, "/")
+	switch kind {
+	case RootRoute:
+		// Parent of the root is a root
+		return ""
+	case StaticRoute:
+		// Parent of a static is either filler or root or dynamic
+		return strings.Join(routeParts[:len(routeParts)-2], "/")
+	case FillerRoute:
+		// Parent of a static is either filler or root or dynamic
+		return strings.Join(routeParts[:len(routeParts)-1], "/")
+	default:
+		// Dynamic Route (of any kind)
+		return strings.Join(routeParts[:len(routeParts)-2], "/")
+	}
 }

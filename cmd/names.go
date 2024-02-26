@@ -8,11 +8,11 @@ import (
 )
 
 var (
-	errZeroLengthRouteName            = errors.New("route name must be contain as least one character")
 	errMissingLeadingSlashInRouteName = errors.New("route name must contain leading /")
 	errTrailingSlashInRouteName       = errors.New("route name must not contain a trailing /")
 	errMultipleSlashInRouteName       = errors.New("route must not contain multiple //")
 	errWhitespaceInRouteName          = errors.New("route must not contain any whitespace")
+	errInvalidFolderName              = errors.New("folder name is invalid")
 )
 
 var (
@@ -48,24 +48,32 @@ func RouteTitleKebabCase(title string) string {
 	return name
 }
 
+// Returns whether a given folder name is valid. This function may also be used to test
+// whether a given route part is valid
+// Current limitation is that only alphabet and dashes are allowed in route parts or folders.
+// This must be changed as necessary
+func IsValidFolderName(name string) bool {
+	nameByte := []byte(name)
+	startsWithAlphabet := regexp.MustCompile(`^[[:alpha:]]`).Match(nameByte)
+	endsWithAlphabet := regexp.MustCompile(`[[:alpha:]]$`).Match(nameByte)
+	alphabetAndDashes := regexp.MustCompile(`([[:alpha:]]|-)+`).Match(nameByte)
+	return startsWithAlphabet && endsWithAlphabet && alphabetAndDashes
+}
+
 // Checks if the route name is valid.
 // If invalid, the returned error message contains details
-func AssertRouteNameValid(kind RouteType, name string) error {
+// The function IsRouteNameValid does the same job but returns a
+// boolean indicating if the route name is valid instead of an
+// error object.
+func RouteNameValid(name string) error {
+	// Root route
 	if len(name) == 0 {
-		return errZeroLengthRouteName
-	}
-	// Valid route name
-	// Note that we check for this before checking leading and trailing
-	// because we require a leading slash but not trailing so its easy
-	// to write code that considers '/' as invalid route name but it's
-	// a valid static root route.
-	if name == "/" && kind == StaticRoute {
 		return nil
 	}
 	if !strings.HasPrefix(name, "/") {
 		return errMissingLeadingSlashInRouteName
 	}
-	if strings.HasSuffix(name, "/") && name != "/" {
+	if strings.HasSuffix(name, "/") {
 		return errTrailingSlashInRouteName
 	}
 	if strings.Contains(name, "//") {
@@ -74,90 +82,71 @@ func AssertRouteNameValid(kind RouteType, name string) error {
 	if regexp.MustCompile(`\s`).MatchString(name) {
 		return errWhitespaceInRouteName
 	}
+	// static index route
+	if name == "/index" {
+		return nil
+	}
+	// dynamic index route
+	if name == "/[slug]" || name == "/[...slug]" || name == "[[...slug]]" {
+		return nil
+	}
+	// Filler route. Note this is different from a filler folder whose name
+	// starts and ends in parenthesis.
+	if IsValidFolderName(name) {
+		return nil
+	}
+	if strings.HasSuffix(name, "/index") {
+		return RouteNameValid(strings.TrimSuffix(name, "/index"))
+	}
+	if strings.HasSuffix(name, "/[slug]") {
+		return RouteNameValid(strings.TrimSuffix(name, "/[slug]"))
+	}
+	if strings.HasSuffix(name, "/[...slug]") {
+		return RouteNameValid(strings.TrimSuffix(name, "/[...slug]"))
+	}
+	if strings.HasSuffix(name, "/[[...slug]]") {
+		return RouteNameValid(strings.TrimSuffix(name, "/[[...slug]]"))
+	}
 	routeParts := strings.Split(name, "/")
 	lastPart := routeParts[len(routeParts)-1]
-
-	// There should be no filler routes (except at last?)
-	// The input to "ngo add route" has to be as similar as possible
-	// of the "ngo ls" command
-	for i := 0; i < len(routeParts)-1; i++ {
-		if routeParts[i] == "" {
-			continue
-		}
-		if IsValidFillerRouteName(routeParts[i]) {
-			return fmt.Errorf("route name cannot contain filler route got %q", routeParts[i])
-		} else if !IsValidStaticRouteName(routeParts[i]) && !IsValidDynamicRouteName(routeParts[i]) {
-			return fmt.Errorf("invalid route name %q", routeParts[i])
-		}
+	if IsValidFolderName(lastPart) {
+		return RouteNameValid(strings.Join(routeParts[:len(routeParts)-1], "/"))
+	} else {
+		return errInvalidFolderName
 	}
-
-	// TODO
-	// What should we say about filler routes in the route name?
-	// Should they exist?
-	switch kind {
-	case StaticRoute:
-		if !IsValidStaticRouteName(lastPart) {
-			return fmt.Errorf("%s is not a valid static route name", lastPart)
-		}
-	case DynamicRoute:
-		// Dynamic Route [slug]
-		if !IsValidDynamicRouteName(lastPart) {
-			return errors.New("dynamic route must end with [slug] or [...slug] or [[...slug]]")
-		}
-	case FillerRoute:
-		if !IsValidFillerRouteName(lastPart) {
-			return errors.New("filler route name must end with (xxx) where xxx may be any alpha-numeric string")
-		}
-	}
-	return nil
 }
 
-func IsValidStaticRouteName(candidate string) bool {
-	return StaticRouteNameRegex.Match([]byte(candidate))
-}
-
-func IsValidFillerRouteName(candidate string) bool {
-	return FillerRouteNameRegex.Match([]byte(candidate))
-}
-
-func IsValidDynamicRouteName(candidate string) bool {
-	return DynamicRouteNameRegex.Match([]byte(candidate)) ||
-		DynamicRouteCatchAllNameRegex.Match([]byte(candidate)) ||
-		DynamicRouteOptionalCatchAllNameRegex.Match([]byte(candidate))
-}
-
-func GetDynamicRouteType(candidate string) (DynamicRouteType, error) {
-	if DynamicRouteNameRegex.Match([]byte(candidate)) {
-		return DynamicRoutePrimary, nil
-	} else if DynamicRouteCatchAllNameRegex.Match([]byte(candidate)) {
-		return DynamicRouteCatchAll, nil
-	} else if DynamicRouteOptionalCatchAllNameRegex.Match([]byte(candidate)) {
-		return DynamicRouteOptionalCatchAll, nil
-	}
-	var bogus DynamicRouteType
-	return bogus, errors.New("not a valid dynamic route type name")
+// Returns a boolean indicating if a given route name is valid
+// The function AssertRouteName does the same job but returns an
+// non-nil error when the given name is an invalid route name
+func IsRouteNameValid(name string) bool {
+	return RouteNameValid(name) == nil
 }
 
 // Return the route type based on the given candiate string
 // also return non nil error when the input is invalid (i.e. no route type
 // exists for the given name)
-func praseRouteType(candidate string) (RouteType, error) {
-	candidateLower := strings.ToLower(candidate)
-	switch candidateLower {
-	case "static":
+// Preconditions:
+// name is a valid route name
+func RouteTypeFromRouteName(name string) (RouteType, error) {
+	err := RouteNameValid(name)
+	if err != nil {
+		return *new(RouteType), err
+	}
+	if name == "" {
+		return RootRoute, nil
+	}
+	if strings.HasSuffix(name, "/index") {
 		return StaticRoute, nil
-	case "dynamic":
+	} else if strings.HasSuffix(name, "/[slug]") {
 		return DynamicRoute, nil
-	case "filler":
+	} else if strings.HasSuffix(name, "/[...slug]") {
+		return DynamicCatchAllRoute, nil
+	} else if strings.HasSuffix(name, "/[[...slug]]") {
+		return DynamicCatchAllRoute, nil
+	} else {
 		return FillerRoute, nil
 	}
-	return StaticRoute, fmt.Errorf("invalid route type. valid types are static, dynamic, filler got %q", candidate)
-}
-
-// Return the route name based on the given candiate string
-// also return non nil error for when the input is invalid
-func praseRouteName(candidate string) (string, error) {
-	return RouteTitleKebabCase(candidate), nil
 }
 
 func GetSchemaExportName(routeName string, routeType RouteType) (string, error) {
@@ -167,6 +156,10 @@ func GetSchemaExportName(routeName string, routeType RouteType) (string, error) 
 		return fmt.Sprintf("%vIndexSchema", nameVar.CamelCaseComponentName), nil
 	case DynamicRoute:
 		return fmt.Sprintf("%vSlugSchema", nameVar.CamelCaseComponentName), nil
+	case DynamicCatchAllRoute:
+		return fmt.Sprintf("%vSlugCASchema", nameVar.CamelCaseComponentName), nil
+	case DynamicCatchAllOptionalRoute:
+		return fmt.Sprintf("%vSlugCAOSchema", nameVar.CamelCaseComponentName), nil
 	default:
 		return "", errors.New("not implemented for given route")
 	}
