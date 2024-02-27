@@ -1,4 +1,4 @@
-module github.com/Guerrilla-Interactive/ngo
+module github.com/Guerrilla-Interactive/ngo/v2
 
 go 1.21
 
