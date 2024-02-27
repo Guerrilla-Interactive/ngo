@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Guerrilla-Interactive/ngo/cmd"
+	"github.com/Guerrilla-Interactive/ngo/v2/cmd"
 )
 
 func TestRouteTitleToFolderName(t *testing.T) {

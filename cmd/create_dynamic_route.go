@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/Guerrilla-Interactive/ngo/files"
+	"github.com/Guerrilla-Interactive/ngo/v2/files"
 )
 
 // Create dynamic route in the given app directory

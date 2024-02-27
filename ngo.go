@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Guerrilla-Interactive/ngo/cmd"
+	"github.com/Guerrilla-Interactive/ngo/v2/cmd"
 )
 
 type DocumentSchemasTemplateVariables struct {
