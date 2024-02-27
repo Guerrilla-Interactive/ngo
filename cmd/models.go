@@ -79,5 +79,7 @@ func RouteFromPagePath(path string, appDir string) string {
 	}
 	// Remove any double slashes
 	result = strings.ReplaceAll(result, fmt.Sprintf("%v%v", os.PathSeparator, os.PathSeparator), string(os.PathSeparator))
+	// Replace os separator with "/"
+	result = strings.Join(strings.Split(result, string(os.PathSeparator)), "/")
 	return result
 }
