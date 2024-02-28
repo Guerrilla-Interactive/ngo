@@ -13,6 +13,7 @@ var (
 	errMultipleSlashInRouteName       = errors.New("route must not contain multiple //")
 	errWhitespaceInRouteName          = errors.New("route must not contain any whitespace")
 	errInvalidFolderName              = errors.New("folder name is invalid")
+	errCannotAddChildrenToStaticRoute = errors.New("cannot add children to static route")
 )
 
 var (
@@ -96,22 +97,39 @@ func RouteNameValid(name string) error {
 	if IsValidFolderName(name) {
 		return nil
 	}
-	if strings.HasSuffix(name, fmt.Sprintf("/%v", IndexRouteEnding)) {
-		return RouteNameValid(strings.TrimSuffix(name, fmt.Sprintf("/%v", IndexRouteEnding)))
+
+	validSuffixes := []string{
+		fmt.Sprintf("/%v", IndexRouteEnding),
+		"/[slug]",
+		"/[...slug]",
+		"/[[...slug]]",
 	}
-	if strings.HasSuffix(name, "/[slug]") {
-		return RouteNameValid(strings.TrimSuffix(name, "/[slug]"))
+	for _, suffix := range validSuffixes {
+		if strings.HasSuffix(name, suffix) {
+			parentRoute := strings.TrimSuffix(name, suffix)
+			kind, err := RouteTypeFromRouteName(parentRoute)
+			if err != nil {
+				return err
+			}
+			if kind == StaticRoute {
+				return errCannotAddChildrenToStaticRoute
+			}
+			return nil
+		}
 	}
-	if strings.HasSuffix(name, "/[...slug]") {
-		return RouteNameValid(strings.TrimSuffix(name, "/[...slug]"))
-	}
-	if strings.HasSuffix(name, "/[[...slug]]") {
-		return RouteNameValid(strings.TrimSuffix(name, "/[[...slug]]"))
-	}
+
 	routeParts := strings.Split(name, "/")
 	lastPart := routeParts[len(routeParts)-1]
 	if IsValidFolderName(lastPart) {
-		return RouteNameValid(strings.Join(routeParts[:len(routeParts)-1], "/"))
+		parentRoute := strings.Join(routeParts[:len(routeParts)-1], "/")
+		kind, err := RouteTypeFromRouteName(parentRoute)
+		if err != nil {
+			return err
+		}
+		if kind == StaticRoute {
+			return errCannotAddChildrenToStaticRoute
+		}
+		return nil
 	} else {
 		return errInvalidFolderName
 	}

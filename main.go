@@ -3,7 +3,9 @@
 // routes
 package main
 
-import "github.com/Guerrilla-Interactive/ngo/v2/cmd"
+import (
+	"github.com/Guerrilla-Interactive/ngo/v2/cmd"
+)
 
 func main() {
 	cmd.Execute()
