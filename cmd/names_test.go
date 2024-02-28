@@ -33,10 +33,10 @@ func TestIsRouteNameValid(t *testing.T) {
 		expected bool
 	}
 	cases := []TestCase{
-		{"/index$/", false}, // must not contain trailing slash
-		{"index", false},    // must contain leading slash
-		{"/index$", true},
-		{"/products/index$", true},
+		{"/(index)/", false}, // must not contain trailing slash
+		{"index", false},     // must contain leading slash
+		{"/(index)", true},
+		{"/products/(index)", true},
 		{"/products", true},              // Filler route
 		{"/products/(something)", false}, // invalid folder name
 		{"/(foobar)", false},             // invalid folder name
@@ -94,17 +94,17 @@ func TestRouteTypeFromRouteName(t *testing.T) {
 	cases := []TestCase{
 		// Valid
 		{"", false, RootRoute},
-		{"/index$", false, StaticRoute},
+		{"/(index)", false, StaticRoute},
 		{"/index", false, FillerRoute},
 		{"/products/index", false, FillerRoute},
-		{"/products/index$", false, StaticRoute},
+		{"/products/(index)", false, StaticRoute},
 		{"/products/[slug]", false, DynamicRoute},
 		{"/products/[...slug]", false, DynamicCatchAllRoute},
 		// Error
-		{"/products/index$/categories", true, FillerRoute},         // Cannot add children of an index route
-		{"/products/index$/categories/index$", true, StaticRoute},  // Cannot add children of an index route
-		{"/products/index$/categories/[slug]", true, DynamicRoute}, // Cannot add children of an index route
-		{"/products/[index]", true, DynamicRoute},                  // Has to literally be [slug] or friends
+		{"/products/(index)(/categories", true, FillerRoute},        // Cannot add children of an index route
+		{"/products/(index)/categories/(index)", true, StaticRoute}, // Cannot add children of an index route
+		{"/products/(index)/categories/[slug]", true, DynamicRoute}, // Cannot add children of an index route
+		{"/products/[index]", true, DynamicRoute},                   // Has to literally be [slug] or friends
 	}
 	for _, testcase := range cases {
 		expectErr, expectedRoute := testcase.hasErr, testcase.expected

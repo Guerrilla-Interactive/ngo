@@ -35,10 +35,10 @@ var (
 		Long: `Add a route to your next project.
 
 Creates a static route called about:
-ng add "/about/index$"
+ng add "/about/(index)"
 
 Creates a static route called values inside about:
-ng add "/about/values/index$"
+ng add "/about/values/(index)"
 
 Creates a dynamic product route called about:
 ng add "/product/[slug]"
@@ -50,7 +50,7 @@ Creates a dynamic catchall optional product route called about:
 ng add "/product/[[...slug]]"
 
 Note that the leading "/" is mandatory and no trailing slash allowed.
-Static root route is represented by "/index$"
+Static root route is represented by "/(index)"
 
 Dynamic root route is represented by "/[slug]"`,
 
@@ -155,7 +155,7 @@ func CreateRoute(routeName, rootDir string) error {
 
 	// Note that in several places in the code below, we are conditionally
 	// checking for parent == "" which tells whether the parent is a root route
-	// For example, when creating /index$ static route, its parent is ""
+	// For example, when creating /(index) static route, its parent is ""
 
 	// Find the first parent that exists or the root route if no parent exists
 	for parentName != "" && !existsRoute(parentName) {
@@ -173,7 +173,7 @@ func CreateRoute(routeName, rootDir string) error {
 	}
 
 	// Create any missing directories in the locationToCreateRoute
-	// For example, if creating a static route with name "/about/values/sustainability/index$",
+	// For example, if creating a static route with name "/about/values/sustainability/(index)",
 	// if the "/about" already exists, we need to create th folder "values/sustainability" inside
 	// the root of the "about" route (by route we mean, first parent of about's page.tsx that's
 	// not a filler directory)

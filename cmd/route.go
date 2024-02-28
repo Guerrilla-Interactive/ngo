@@ -111,12 +111,12 @@ func RouteExists(name string, routes []Route, appDir string) (Route, error) {
 }
 
 // Get the parent route of the given route
-// If no parents exists (for example for route name "/index$"),
+// If no parents exists (for example for route name "/(index)"),
 // returns the name of the root route, which is ""
 //
 // Note that this function is different from the GetParent function
 // in the frontend where, for example, the parent route name of
-// "/products/old/index$" is "/products/old".
+// "/products/old/(index)" is "/products/old".
 //
 // Preconditions:
 // name is a valid route name

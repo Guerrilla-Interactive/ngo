@@ -29,7 +29,7 @@ var (
 	GeneralDynamicRouteNameRegex                 = regexp.MustCompile(`\[[[:alnum:]]+\]`)
 	GeneralDynamicRouteCatchAllNameRegex         = regexp.MustCompile(`\[\.\.\.[[:alnum:]]+\]`)
 	GeneralDynamicRouteOptionalCatchAllNameRegex = regexp.MustCompile(`\[\[\.\.\.[[:alnum:]]+\]\]`)
-	IndexRouteEnding                             = "index$" //
+	IndexRouteEnding                             = "(index)" //
 )
 
 // Returns the kebabcase version of the title string
