@@ -71,9 +71,9 @@ func GetRoutes(appDir string) []Route {
 			routeRootString := RouteFromPagePath(path, appDir)
 			if routeType == StaticRoute {
 				if routeRootString == "/" {
-					routeRootString = "/index"
+					routeRootString = fmt.Sprintf("/%v", IndexRouteEnding)
 				} else {
-					routeRootString = fmt.Sprintf("%v/index", routeRootString)
+					routeRootString = fmt.Sprintf("%v/%v", routeRootString, IndexRouteEnding)
 				}
 			}
 			route := Route{

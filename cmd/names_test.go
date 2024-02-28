@@ -1,6 +1,8 @@
 package cmd
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestRouteTitleKebabCase(t *testing.T) {
 	type TestCase struct {
@@ -31,10 +33,10 @@ func TestIsRouteNameValid(t *testing.T) {
 		expected bool
 	}
 	cases := []TestCase{
-		{"/index/", false}, // must not contain trailing slash
-		{"index", false},   // must contain leading slash
-		{"/index", true},
-		{"/products/index", true},
+		{"/index$/", false}, // must not contain trailing slash
+		{"index", false},    // must contain leading slash
+		{"/index$", true},
+		{"/products/index$", true},
 		{"/products", true},              // Filler route
 		{"/products/(something)", false}, // invalid folder name
 		{"/(foobar)", false},             // invalid folder name
@@ -79,6 +81,35 @@ func TestIsValidFolderName(t *testing.T) {
 		got := IsValidFolderName(testcase.name)
 		if expected != got {
 			t.Errorf("IsValidFolderName(%q) returned %v wanted %v", testcase.name, got, expected)
+		}
+	}
+}
+
+func TestRouteTypeFromRouteName(t *testing.T) {
+	type TestCase struct {
+		name     string
+		hasErr   bool
+		expected RouteType
+	}
+	cases := []TestCase{
+		{"", false, RootRoute},
+		{"/index$", false, StaticRoute},
+		{"/index", false, FillerRoute},
+		{"/products/index", false, FillerRoute},
+		{"/products/index$", false, StaticRoute},
+		{"/products/[index]", true, DynamicRoute}, // Has to literally be [slug] or friends
+		{"/products/[slug]", false, DynamicRoute},
+		{"/products/[...slug]", false, DynamicCatchAllRoute},
+	}
+	for _, testcase := range cases {
+		expectErr, expectedRoute := testcase.hasErr, testcase.expected
+		gotRoute, err := RouteTypeFromRouteName(testcase.name)
+		gotErr := err != nil
+		if expectErr != gotErr {
+			t.Errorf("RouteTypeFromRouteName(%q) expected error %v got error %v", testcase.name, expectErr, gotErr)
+		}
+		if expectErr == gotErr && gotErr == false && expectedRoute != gotRoute {
+			t.Errorf("RouteTypeFromRouteName(%q) expected route %v got %v", testcase.name, expectedRoute, gotRoute)
 		}
 	}
 }

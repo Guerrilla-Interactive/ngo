@@ -19,7 +19,7 @@ func IsValidTerminalPageRouteName(candidate string) bool {
 }
 
 // Preconditions,
-// name is a valid folder name for Dyanmic or a Static route
+// name is a valid folder name for Dynamic or a Static route
 func FolderNameToRouteType(name string) RouteType {
 	// If foldername is the path to the folder, extract
 	// just the last part so we get the folder name instead
@@ -110,9 +110,13 @@ func RouteExists(name string, routes []Route, appDir string) (Route, error) {
 	return toReturn, fmt.Errorf("route of name %v not found", name)
 }
 
-// Get the route for the parent of the given route
-// If no parents exists (for example for route name "/index"),
+// Get the parent route of the given route
+// If no parents exists (for example for route name "/index$"),
 // returns the name of the root route, which is ""
+//
+// Note that this function is different from the GetParent function
+// in the frontend where, for example, the parent route name of
+// "/products/old/index$" is "/products/old".
 //
 // Preconditions:
 // name is a valid route name

@@ -28,6 +28,7 @@ var (
 	GeneralDynamicRouteNameRegex                 = regexp.MustCompile(`\[[[:alnum:]]+\]`)
 	GeneralDynamicRouteCatchAllNameRegex         = regexp.MustCompile(`\[\.\.\.[[:alnum:]]+\]`)
 	GeneralDynamicRouteOptionalCatchAllNameRegex = regexp.MustCompile(`\[\[\.\.\.[[:alnum:]]+\]\]`)
+	IndexRouteEnding                             = "index$" //
 )
 
 // Returns the kebabcase version of the title string
@@ -83,7 +84,7 @@ func RouteNameValid(name string) error {
 		return errWhitespaceInRouteName
 	}
 	// static index route
-	if name == "/index" {
+	if name == fmt.Sprintf("/%v", IndexRouteEnding) {
 		return nil
 	}
 	// dynamic index route
@@ -95,8 +96,8 @@ func RouteNameValid(name string) error {
 	if IsValidFolderName(name) {
 		return nil
 	}
-	if strings.HasSuffix(name, "/index") {
-		return RouteNameValid(strings.TrimSuffix(name, "/index"))
+	if strings.HasSuffix(name, fmt.Sprintf("/%v", IndexRouteEnding)) {
+		return RouteNameValid(strings.TrimSuffix(name, fmt.Sprintf("/%v", IndexRouteEnding)))
 	}
 	if strings.HasSuffix(name, "/[slug]") {
 		return RouteNameValid(strings.TrimSuffix(name, "/[slug]"))
@@ -136,7 +137,7 @@ func RouteTypeFromRouteName(name string) (RouteType, error) {
 	if name == "" {
 		return RootRoute, nil
 	}
-	if strings.HasSuffix(name, "/index") {
+	if strings.HasSuffix(name, fmt.Sprintf("/%v", IndexRouteEnding)) {
 		return StaticRoute, nil
 	} else if strings.HasSuffix(name, "/[slug]") {
 		return DynamicRoute, nil
