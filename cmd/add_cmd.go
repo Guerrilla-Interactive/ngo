@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // Errors
@@ -209,7 +211,7 @@ func createFillerRoute(path, title, routeName, rootDir string) error {
 	// Create a basic layout.tsx file for the filler route
 	layoutContent := `import React from 'react';
 
-export default function ` + strings.Title(title) + `Layout({ children }: { children: React.ReactNode }) {
+export default function ` + cases.Title(language.Und).String(title)(title) + `Layout({ children }: { children: React.ReactNode }) {
 	return (
 		<>
 			{children}
