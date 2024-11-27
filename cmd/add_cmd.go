@@ -208,10 +208,13 @@ func createFillerRoute(path, title, routeName, rootDir string) error {
 		return err
 	}
 
+	// Apply title casing to the route title
+	routeTitle := cases.Title(language.Und).String(title)
+
 	// Create a basic layout.tsx file for the filler route
 	layoutContent := `import React from 'react';
 
-export default function ` + cases.Title(language.Und).String(title)(title) + `Layout({ children }: { children: React.ReactNode }) {
+export default function ` + routeTitle + `Layout({ children }: { children: React.ReactNode }) {
 	return (
 		<>
 			{children}
