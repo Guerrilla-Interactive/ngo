@@ -1,8 +1,11 @@
+// cmd/names.go
+
 package cmd
 
 import (
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -68,14 +71,18 @@ func IsValidFolderName(name string) bool {
 // boolean indicating if the route name is valid instead of an
 // error object.
 func RouteNameValid(name string) error {
+	// Normalize the route name for internal processing.
+	// This step is crucial for supporting Windows paths.
+	name = strings.Replace(name, string(os.PathSeparator), "/", -1)
+
 	// Root route
-	if len(name) == 0 {
+	if len(name) == 0 || name == "/" {
 		return nil
 	}
 	if !strings.HasPrefix(name, "/") {
 		return errMissingLeadingSlashInRouteName
 	}
-	if strings.HasSuffix(name, "/") {
+	if name != "/" && strings.HasSuffix(name, "/") {
 		return errTrailingSlashInRouteName
 	}
 	if strings.Contains(name, "//") {
@@ -89,7 +96,7 @@ func RouteNameValid(name string) error {
 		return nil
 	}
 	// dynamic index route
-	if name == "/[slug]" || name == "/[...slug]" || name == "[[...slug]]" {
+	if name == "/[slug]" || name == "/[...slug]" || name == "/[[...slug]]" {
 		return nil
 	}
 	// Filler route. Note this is different from a filler folder whose name
@@ -152,7 +159,7 @@ func RouteTypeFromRouteName(name string) (RouteType, error) {
 	if err != nil {
 		return *new(RouteType), err
 	}
-	if name == "" {
+	if name == "" || name == "/" {
 		return RootRoute, nil
 	}
 	if strings.HasSuffix(name, fmt.Sprintf("/%v", IndexRouteEnding)) {
@@ -162,7 +169,7 @@ func RouteTypeFromRouteName(name string) (RouteType, error) {
 	} else if strings.HasSuffix(name, "/[...slug]") {
 		return DynamicCatchAllRoute, nil
 	} else if strings.HasSuffix(name, "/[[...slug]]") {
-		return DynamicCatchAllRoute, nil
+		return DynamicCatchAllOptionalRoute, nil
 	} else {
 		return FillerRoute, nil
 	}

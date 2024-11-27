@@ -1,3 +1,5 @@
+// cmd/template.go
+
 package cmd
 
 import (

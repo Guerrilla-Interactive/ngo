@@ -18,7 +18,7 @@ var (
 	lsCmd = &cobra.Command{
 		Use:   "ls",
 		Short: "List routes",
-		Long:  `List routes in your project`,
+		Long:  `List routes in your projects`,
 		Run: func(_ *cobra.Command, _ []string) {
 			appDir, err := GetAppDirFromWorkingDir()
 			if err != nil {
