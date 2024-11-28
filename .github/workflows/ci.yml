@@ -22,19 +22,21 @@ jobs:
         uses: golangci/golangci-lint-action@v3.5.0
         with:
           args: --timeout=5m
-  # test:
-  #   runs-on: ubuntu-latest
-  #   needs: lint
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-go@v5
-  #       with:
-  #         go-version: 1.21
-  #     - run: go test -v ./...  
-  
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.21
+      - name: Run Tests
+        run: go test -v ./...
+
   release:
     runs-on: ubuntu-latest
-    # needs: test
+    needs: [test]
     permissions:
       contents: write
     steps:
@@ -42,9 +44,35 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: 1.21
-      - uses: sumanchapai/go-semantic-release-action@v1
+      - name: Run Semantic Release
+        uses: sumanchapai/go-semantic-release-action@v1
         with:
           pre-release-post-dry-cmd: "cp .version cmd/.version"
           files-to-commit: "cmd/.version"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Release Binaries
+        run: |
+          mkdir -p dist
+          GOOS=linux GOARCH=amd64 go build -o dist/ngo_linux_amd64 ./...
+          GOOS=linux GOARCH=arm64 go build -o dist/ngo_linux_arm64 ./...
+          GOOS=darwin GOARCH=amd64 go build -o dist/ngo_darwin_amd64 ./...
+          GOOS=darwin GOARCH=arm64 go build -o dist/ngo_darwin_arm64 ./...
+          GOOS=windows GOARCH=amd64 go build -o dist/ngo_windows_amd64.exe ./...
+          GOOS=windows GOARCH=386 go build -o dist/ngo_windows_386.exe ./...
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.run_semantic_release.outputs.upload_url }}
+          asset_path: dist/ngo_linux_amd64
+          asset_name: ngo_${{ github.ref_name }}_linux_amd64
+          asset_content_type: application/octet-stream
+      - name: Upload Other Binaries
+        run: |
+          for file in dist/*; do
+            curl -X POST \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$file" \
+              "${{ steps.run_semantic_release.outputs.upload_url }}?name=$(basename $file)"
+          done
