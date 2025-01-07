@@ -122,6 +122,18 @@ func CreateRoute(routeName, rootDir string) error {
 		return err
 	}
 
+	// ------------------------------------------------------------------------------
+	// Make sure everything is nested in (site)
+	siteDir := filepath.Join(appDir, "(site)")
+	if _, err = os.Stat(siteDir); os.IsNotExist(err) {
+		if err = os.MkdirAll(siteDir, 0755); err != nil {
+			return fmt.Errorf("failed to create (site) directory: %w", err)
+		}
+	}
+	// We now treat siteDir as the "appDir" for new routes
+	appDir = siteDir
+	// ------------------------------------------------------------------------------
+
 	// Get list of existing routes
 	routes := GetRoutes(appDir)
 	// Anonymous function existsRoute that returns a boolean
@@ -132,10 +144,6 @@ func CreateRoute(routeName, rootDir string) error {
 	}
 
 	// Fail if the given route already exists
-
-	// Note that we are not using the existsRoute function here because
-	// we also need the result of where the route exists
-	// (i.e the first thing that RouteExists returns)
 	if foundRoute, err := RouteExists(routeName, routes, appDir); err == nil {
 		errExit(fmt.Sprintf("%v already exists",
 			RouteFromPagePath(foundRoute.PathToPage, appDir),
@@ -174,23 +182,19 @@ func CreateRoute(routeName, rootDir string) error {
 
 	// Create any missing directories in the locationToCreateRoute
 	// For example, if creating a static route with name "/about/values/sustainability/(index)",
-	// if the "/about" already exists, we need to create th folder "values/sustainability" inside
+	// if the "/about" already exists, we need to create the folder "values/sustainability" inside
 	// the root of the "about" route (by route we mean, first parent of about's page.tsx that's
 	// not a filler directory)
 	foldersToCreate := strings.TrimPrefix(routeName, parentName)
 	if routeKind == StaticRoute {
 		foldersToCreate = strings.TrimSuffix(foldersToCreate, IndexRouteEnding)
 	}
-	// This is the filepath level where we can create page.tsx files
-	// Note though that we might, in reality, create the page.tsx file inside
-	// a filler directory in this path.
 	locationToCreateRoute = filepath.Join(locationToCreateRoute, foldersToCreate)
-	// We create all necessary foldrs by calling this function
 	CreatePathAndExitOnFail(locationToCreateRoute)
 
 	// Now we create a title for the route that is used for component names and such
 	var routeTitle string
-	routeParts := strings.Split(routeName, string(os.PathSeparator))
+	routeParts := strings.Split(routeName, "/")
 	if len(routeParts) == 2 {
 		routeTitle = "root"
 	} else {
@@ -200,7 +204,6 @@ func CreateRoute(routeName, rootDir string) error {
 		createStaticRoute(locationToCreateRoute, routeTitle, routeName, rootDir)
 		return nil
 	}
-	// Route kind is Dyanmic Route (of any variant: catchall, catchall optional, etc...)
 	createDynamicRoute(locationToCreateRoute, routeTitle, routeKind, rootDir)
 	return nil
 }

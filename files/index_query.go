@@ -8,7 +8,7 @@ import { q } from "groqd"
 import { basePageQuery } from "@/sanity/shame-queries/base-page.query"
 
 export const {{.CamelCaseComponentName}}IndexQuery = q("*")
-    .filterByType("{{.CamelCaseComponentName}}")
+    .filterByType("{{.CamelCaseComponentName}}-index")
     .grab({
         title: q.string().optional(),
         ...basePageQuery,

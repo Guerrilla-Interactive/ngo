@@ -10,8 +10,8 @@ import { metaFields } from '@/sanity/schema-utils/generator-field/meta-fields.fi
 
 export const {{.CamelCaseComponentName}}IndexSchema = defineType({
   type: "document",
-  name: "{{.CamelCaseComponentName}}",
-  title: "{{.PascalCaseComponentName}}",
+  name: "{{.CamelCaseComponentName}}-index",
+  title: "{{.PascalCaseComponentName}}Index",
   groups: defaultGroups,
   options: {
     previewable: true,

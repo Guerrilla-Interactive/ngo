@@ -11,8 +11,8 @@ import { metaFields } from '@/sanity/schema-utils/generator-field/meta-fields.fi
 
 export const {{.CamelCaseComponentName}}SlugSchema = defineType({
   type: "document",
-  name: "{{.CamelCaseComponentName}}",
-  title: "{{.PascalCaseComponentName}}",
+  name: "{{.CamelCaseComponentName}}-slug",
+  title: "{{.PascalCaseComponentName}}Slug",
   groups: defaultGroups,
   options: {
     previewable: true,

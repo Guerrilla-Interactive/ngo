@@ -8,7 +8,7 @@ import { q } from "groqd"
 import { basePageQuery } from "@/sanity/shame-queries/base-page.query"
 
 export const {{.CamelCaseComponentName}}SlugQuery = q("*")
-    .filterByType("{{.CamelCaseComponentName}}")
+    .filterByType("{{.CamelCaseComponentName}}-slug")
     .filter("slug.current == $slug")
     .grab({
         title: q.string().optional(),
